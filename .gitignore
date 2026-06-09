@@ -1,0 +1,27 @@
+# 编译产物
+/example
+*.exe
+*.test
+*.out
+
+# 本地开发配置（含密钥：DB 密码 / LOGIN_SECRET / OAuth key）—— 严禁提交
+dev_env
+
+# 本地数据库
+*.db
+*.db-shm
+*.db-wal
+
+# 运行时上传产物（保留目录结构）
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# 本地草稿/笔记
+ec.md
+
+# OS / 编辑器
+.DS_Store
+.vscode
+.claude
+.codex
+*.swp
