@@ -3,8 +3,8 @@ package containers
 import (
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
-	"github.com/r0vx/web"
 	. "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
 )
 
 // WebHeader 页头容器模型
@@ -21,7 +21,7 @@ func (*WebHeader) TableName() string {
 // RegisterHeader 注册页头容器
 func RegisterHeader(pb *pagebuilder.Builder) {
 	header := pb.RegisterContainer("Header").Group("Navigation").
-		RenderFunc(func(obj interface{}, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
+		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			header := obj.(*WebHeader)
 			return HeaderTemplate(header, input)
 		})

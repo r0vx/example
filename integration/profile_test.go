@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	. "github.com/r0vx/web/multipartestutils"
+	"github.com/r0vx/x/perm"
 	"github.com/theplant/gofixtures"
 	"golang.org/x/text/language"
 	"gorm.io/gorm"
@@ -18,7 +19,6 @@ import (
 	"github.com/r0vx/admin/login"
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/admin/presets/actions"
-	"github.com/r0vx/admin/role"
 	h "github.com/r0vx/htmlgo"
 )
 
@@ -38,7 +38,7 @@ func TestProfile(t *testing.T) {
 	user := &models.User{
 		Model: gorm.Model{ID: 1},
 		Name:  "qor@theplant.jp",
-		Roles: []role.Role{
+		Roles: []perm.Role{
 			{
 				Model: gorm.Model{ID: 1},
 				Name:  models.RoleAdmin,
@@ -207,7 +207,7 @@ func TestProfile(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := role.Role{}
+				m := perm.Role{}
 				TestDB.First(&m, 4)
 				if m.Name != "Viewer1" {
 					t.Fatalf("got %v want Viewer1", m.Name)
@@ -243,7 +243,7 @@ func TestProfile(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := role.Role{}
+				m := perm.Role{}
 				TestDB.First(&m, 4)
 				if m.Name != "" {
 					t.Fatalf("delete faield %#+v", m)
@@ -264,7 +264,7 @@ func TestRoleEditor(t *testing.T) {
 	h := admin.TestHandler(TestDB, &models.User{
 		Model: gorm.Model{ID: 888},
 		Name:  "viwer@theplant.jp",
-		Roles: []role.Role{
+		Roles: []perm.Role{
 			{
 				Name: models.RoleEditor,
 			},
@@ -293,7 +293,7 @@ func TestRoleEditor(t *testing.T) {
 	h = admin.TestHandler(TestDB, &models.User{
 		Model: gorm.Model{ID: 888},
 		Name:  "admin@theplant.jp",
-		Roles: []role.Role{
+		Roles: []perm.Role{
 			{
 				Name: models.RoleAdmin,
 			},

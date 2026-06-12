@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnAdminDemoDemo 虚拟模型
@@ -324,7 +324,7 @@ func buildStatCards() h.HTMLComponent {
 }
 
 // buildUserDataTableWithRowClick 构建带行点击事件的用户数据表格
-func buildUserDataTableWithRowClick(users []map[string]interface{}, columns []DataTableColumn) h.HTMLComponent {
+func buildUserDataTableWithRowClick(users []map[string]any, columns []DataTableColumn) h.HTMLComponent {
 	return DataTable().
 		Data(users).
 		Columns(columns).
@@ -484,7 +484,7 @@ func buildPageTabsContent(usersContent h.HTMLComponent) h.HTMLComponent {
 // shadcnAdminDemoBody 后台管理页面演示
 func shadcnAdminDemoBody(ctx *web.EventContext) h.HTMLComponent {
 	// 用户数据 - 25条
-	allUsers := []map[string]interface{}{
+	allUsers := []map[string]any{
 		{"id": "1", "name": "Zhang San", "email": "zhangsan@example.com", "role": "Admin", "status": "active", "created_at": "2024-01-15"},
 		{"id": "2", "name": "Li Si", "email": "lisi@example.com", "role": "Editor", "status": "active", "created_at": "2024-01-16"},
 		{"id": "3", "name": "Wang Wu", "email": "wangwu@example.com", "role": "Viewer", "status": "inactive", "created_at": "2024-01-17"},
@@ -513,7 +513,7 @@ func shadcnAdminDemoBody(ctx *web.EventContext) h.HTMLComponent {
 	}
 
 	// 按状态筛选用户
-	var activeUsers, inactiveUsers []map[string]interface{}
+	var activeUsers, inactiveUsers []map[string]any
 	for _, u := range allUsers {
 		if u["status"] == "active" {
 			activeUsers = append(activeUsers, u)

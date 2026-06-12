@@ -33,7 +33,7 @@ func shadcnGridBody(ctx *web.EventContext) h.HTMLComponent {
 	// 辅助函数：创建网格行
 	row := func(cols int, count int, variant BadgeVariant) h.HTMLComponent {
 		var children []h.HTMLComponent
-		for i := 0; i < count; i++ {
+		for range count {
 			children = append(children,
 				Card(
 					CardContent(

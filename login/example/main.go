@@ -10,9 +10,9 @@ import (
 	"github.com/markbates/goth/providers/google"
 	plogin "github.com/r0vx/admin/login"
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/login"
-	h "github.com/r0vx/htmlgo"
 	"github.com/theplant/osenv"
 	"github.com/theplant/testingutils"
 	"gorm.io/driver/sqlite"
@@ -80,7 +80,7 @@ func main() {
 			},
 		).
 		WrapAfterConfirmSendResetPasswordLink(func(in login.HookFunc) login.HookFunc {
-			return func(r *http.Request, user interface{}, extraVals ...interface{}) error {
+			return func(r *http.Request, user any, extraVals ...any) error {
 				if err := in(r, user, extraVals...); err != nil {
 					return err
 				}

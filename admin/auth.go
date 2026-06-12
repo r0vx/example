@@ -5,20 +5,20 @@ import (
 
 	"example/models"
 
-	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/admin/activity"
 	plogin "github.com/r0vx/admin/login"
 	"github.com/r0vx/admin/presets"
-	"github.com/r0vx/admin/role"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/x/login"
 	"github.com/r0vx/x/login/provider/wechat"
+	"github.com/r0vx/x/perm"
 	"github.com/theplant/osenv"
 	"gorm.io/gorm"
 )
 
 var (
-	loginSecret      = osenv.Get("LOGIN_SECRET", "Login secret use to sign session", "")
-	baseURL          = osenv.Get("BASE_URL", "Base URL for Login", "http://localhost:9500")
+	loginSecret = osenv.Get("LOGIN_SECRET", "Login secret use to sign session", "")
+	baseURL     = osenv.Get("BASE_URL", "Base URL for Login", "http://localhost:9500")
 	// 微信扫码登录（微信开放平台「网站应用」）：
 	//   1) open.weixin.qq.com 注册「网站应用」→ 拿 AppID / AppSecret；
 	//   2) 应用「授权回调域」填本服务域名（只填域名、不含 https:// 和路径，须与 BASE_URL 域名一致）；
@@ -28,9 +28,9 @@ var (
 	wechatAppSecret = osenv.Get("WECHAT_APPSECRET", "WeChat Open Platform website-app AppSecret", "")
 	// Telegram 登录（Login Widget，非 OAuth2）：@BotFather 建 bot → 拿 token + 用户名；
 	//   用 BotFather 的 /setdomain 把 bot 域名设为 BASE_URL 的域名。两者留空则不显示 Telegram 按钮。详见 x/login/README.md。
-	telegramBotToken = osenv.Get("TELEGRAM_BOT_TOKEN", "Telegram bot token (@BotFather) for login", "")
-	telegramBotName  = osenv.Get("TELEGRAM_BOT_NAME", "Telegram bot username (without @)", "")
-	recaptchaSiteKey   = osenv.Get("RECAPTCHA_SITE_KEY", "Recaptcha site key for Login with Recaptcha", "")
+	telegramBotToken         = osenv.Get("TELEGRAM_BOT_TOKEN", "Telegram bot token (@BotFather) for login", "")
+	telegramBotName          = osenv.Get("TELEGRAM_BOT_NAME", "Telegram bot username (without @)", "")
+	recaptchaSiteKey         = osenv.Get("RECAPTCHA_SITE_KEY", "Recaptcha site key for Login with Recaptcha", "")
 	recaptchaSecret          = osenv.Get("RECAPTCHA_SECRET_KEY", "Recaptcha secret for Login with Recaptcha", "")
 	loginInitialUserEmail    = osenv.Get("LOGIN_INITIAL_USER_EMAIL", "Initial user email for Login", "")
 	loginInitialUserPassword = osenv.Get("LOGIN_INITIAL_USER_PASSWORD", "Initial user password for Login", "123")
@@ -191,14 +191,14 @@ func grantUserRole(db *gorm.DB, userID uint, roleName string) error {
 
 func initDefaultRoles(db *gorm.DB) error {
 	var cnt int64
-	if err := db.Model(&role.Role{}).Count(&cnt).Error; err != nil {
+	if err := db.Model(&perm.Role{}).Count(&cnt).Error; err != nil {
 		return err
 	}
 
 	if cnt == 0 {
-		var roles []*role.Role
+		var roles []*perm.Role
 		for _, r := range models.DefaultRoles {
-			roles = append(roles, &role.Role{
+			roles = append(roles, &perm.Role{
 				Name: r,
 			})
 		}

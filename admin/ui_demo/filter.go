@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/r0vx/admin/presets"
-	shadcn "github.com/r0vx/x/ui/shadcn"
-	"github.com/r0vx/web"
 	h "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
+	shadcn "github.com/r0vx/x/ui/shadcn"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +25,7 @@ func ConfigFilterDemo(b *presets.Builder, db *gorm.DB) {
 	listing.PerPage(20)
 
 	// 金额格式化
-	listing.Field("Amount").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	listing.Field("Amount").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		d := obj.(*models.FilterDemo)
 		return h.Text(fmt.Sprintf("¥%.2f", d.Amount))
 	})
@@ -166,9 +166,9 @@ func ConfigFilterDemo(b *presets.Builder, db *gorm.DB) {
 			},
 			// 12. LinkageSelectItem — 级联选择（多级联动）
 			{
-				Key:          "region",
-				Label:        "12. LinkageSelect（地区级联）",
-				ItemType:     shadcn.FilterItemTypeLinkageSelect,
+				Key:           "region",
+				Label:         "12. LinkageSelect（地区级联）",
+				ItemType:      shadcn.FilterItemTypeLinkageSelect,
 				LinkageItems:  [][]shadcn.FilterLinkageItem{level1, level2, level3},
 				LinkageLabels: []string{"国家", "省/州", "城市"},
 				LinkageSelectData: shadcn.FilterLinkageSelectData{

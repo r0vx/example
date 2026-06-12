@@ -18,6 +18,10 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 	b.Permission(
 		perm.New().Policies(
 			//perm.PolicyFor(perm.Anybody).WhoAre(perm.Allowed).ToDo(perm.Anything).On(perm.Anything),
+			// Admin 超管放行（静态兜底，与 DB 策略叠加；Denied 仍可覆盖 Allow）。
+			// 注意：seo 编辑权限闸 editIsAllowed 接线后（移植回归修复），启用 perm 的项目
+			// 必须有能匹配 `:seo:seo_settings:` + `perm_seo_edit` 的 allow 策略，否则 SEO 不可编辑。
+			perm.PolicyFor(models.RoleAdmin).WhoAre(perm.Allowed).ToDo(perm.Anything).On(perm.Anything),
 			perm.PolicyFor(perm.Anybody).WhoAre(perm.Denied).ToDo(presets.PermCreate).On("*:orders:*"),
 			perm.PolicyFor(
 				models.RoleViewer,
@@ -46,7 +50,7 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 				return nil
 			}
 			return u.GetRoles()
-		}).ContextFunc(func(r *http.Request, objs []interface{}) perm.Context {
+		}).ContextFunc(func(r *http.Request, objs []any) perm.Context {
 			c := make(perm.Context)
 			for _, obj := range objs {
 				switch v := obj.(type) {

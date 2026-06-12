@@ -37,7 +37,7 @@ func ConfigTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 	rmb := lb.RowMenu().InlineDefaultsInMenu(true)
 
 	// test
-	rmb.RowMenuItem("readmeDoc").ComponentFunc(func(obj interface{}, id string, ctx *web.EventContext) h.HTMLComponent {
+	rmb.RowMenuItem("readmeDoc").ComponentFunc(func(obj any, id string, ctx *web.EventContext) h.HTMLComponent {
 		cu := obj.(*Department)
 
 		return shadcn.RowMenuItem("test").SetOnclick(

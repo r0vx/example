@@ -3,7 +3,7 @@ package web_test
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -102,7 +102,7 @@ func TestFileUpload(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-			data, err = ioutil.ReadAll(mf)
+			data, err = io.ReadAll(mf)
 			if err != nil {
 				panic(err)
 			}
@@ -122,7 +122,7 @@ func TestFileUpload(t *testing.T) {
 
 	diff := testingutils.PrettyJsonDiff(`
 {
-	"body": "\n\u003ch1\u003eHello\u003c/h1\u003e\n",
+	"body": "\u003ch1\u003eHello\u003c/h1\u003e",
 	"reload": true,
 	"pushState": null
 }
@@ -185,7 +185,7 @@ var eventCases = []struct {
 			return
 		},
 		expectedEventResp: `{
-	"body": "\n\u003cdiv\u003e\n\u003ch1\u003ehello\u003c/h1\u003e\n\u003c/div\u003e\n",
+	"body": "\u003cdiv\u003e\u003ch1\u003ehello\u003c/h1\u003e\u003c/div\u003e",
 	"pushState": null
 }`,
 	},
@@ -215,19 +215,7 @@ var eventCases = []struct {
 	"pushState": null
 }`,
 		expectedIndexResp: `<!DOCTYPE html>
-
-<html>
-<head>
-<meta charset='utf8'>
-
-<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-</head>
-
-<body class='front'>
-<div id='app' v-cloak><div>hello</div></div>
-<script src='/assets/main.js'></script></body>
-</html>
-
+<html><head><meta charset='utf8'><meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'></head><body class='front'><div id='app' v-cloak><div>hello</div></div><script src='/assets/main.js'></script></body></html>
 `,
 	},
 }
@@ -281,7 +269,7 @@ var mountCases = []struct {
 		bodyFunc: func(b *multipartestutils.Builder) {
 			b.EventFunc("bookmark")
 		},
-		expected: `{"body":"\n\u003ch1\u003exgb123 bookmarked\u003c/h1\u003e\n","pushState":null}`,
+		expected: `{"body":"<h1>xgb123 bookmarked</h1>","pushState":null}`,
 	},
 }
 

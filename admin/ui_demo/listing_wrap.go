@@ -6,9 +6,9 @@ import (
 	"example/models"
 
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 	"github.com/theplant/relay"
 	"gorm.io/gorm"
 )
@@ -273,7 +273,7 @@ func ConfigListingWrapDemo(b *presets.Builder, db *gorm.DB) {
 			if !hasStatusFilter {
 				params.SQLConditions = append(params.SQLConditions, &presets.SQLCondition{
 					Query: "status != ?",
-					Args:  []interface{}{"archived"},
+					Args:  []any{"archived"},
 				})
 			}
 			return in(ctx, params)
@@ -285,7 +285,7 @@ func ConfigListingWrapDemo(b *presets.Builder, db *gorm.DB) {
 	// ========================================================================
 	ed := mb.Editing("Title", "Status", "Priority", "Assignee", "Category")
 
-	ed.Field("Status").Label("状态").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	ed.Field("Status").Label("状态").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		return shadcn.Select().
 			Items([]shadcn.DefaultOptionItem{
 				{Text: "草稿", Value: "draft"},
@@ -297,7 +297,7 @@ func ConfigListingWrapDemo(b *presets.Builder, db *gorm.DB) {
 			ErrorMessages(field.Errors...)
 	})
 
-	ed.Field("Priority").Label("优先级").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	ed.Field("Priority").Label("优先级").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		return shadcn.Select().
 			Items([]shadcn.DefaultOptionItem{
 				{Text: "低", Value: "1"},
@@ -309,7 +309,7 @@ func ConfigListingWrapDemo(b *presets.Builder, db *gorm.DB) {
 			ErrorMessages(field.Errors...)
 	})
 
-	ed.Field("Category").Label("分类").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	ed.Field("Category").Label("分类").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		return shadcn.Select().
 			Items([]shadcn.DefaultOptionItem{
 				{Text: "技术", Value: "tech"},
@@ -323,7 +323,7 @@ func ConfigListingWrapDemo(b *presets.Builder, db *gorm.DB) {
 
 	// 列表自定义字段：状态显示为 Badge
 	lb.Field("Status").Label("状态").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*models.ListingWrapDemo)
 			var variant shadcn.BadgeVariant
 			var text string
@@ -346,7 +346,7 @@ func ConfigListingWrapDemo(b *presets.Builder, db *gorm.DB) {
 
 	// 列表自定义字段：优先级显示为彩色文字
 	lb.Field("Priority").Label("优先级").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*models.ListingWrapDemo)
 			var text, class string
 			switch demo.Priority {

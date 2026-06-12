@@ -73,7 +73,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 	// Switch1 列表字段 - 带事件的开关，固定列宽 80px
 	cl.Field("Switch1").
 		CellClass("w-[80px]").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			info := obj.(*models.InputDemo)
 			onclick := web.Plaid().
 				EventFunc("eventToggleSwitch").
@@ -86,7 +86,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 		})
 
 	// Slider1 列使用 Progress 进度条展示
-	cl.Field("Slider1").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	cl.Field("Slider1").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		info := obj.(*models.InputDemo)
 		return shadcn.Progress().ModelValue(info.Slider1)
 	})
@@ -182,7 +182,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 	// MediaLibrary1    media_library.MediaBox
 	// TextField1 - 使用 shadcn Input
 	ed.Field("TextField1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Input().Label(field.Label).Attr(web.VField(field.Name, field.Value(obj))...).
 				ErrorMessages(field.Errors...).Tips("提示信息")
 		})
@@ -195,21 +195,21 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// Switch1 - 使用 shadcn Switch
 	ed.Field("Switch1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			checked, _ := field.Value(obj).(bool)
 			return shadcn.Switch().Label(field.Label).Checked(checked).Disabled(field.Disabled).Attr(web.VField(field.Name, field.Value(obj))...)
 		})
 
 	// Slider1 - 使用 shadcn Slider
 	ed.Field("Slider1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(int)
 			return shadcn.Slider().Label(field.Label).ModelValue(val).Disabled(field.Disabled).Attr(web.VField(field.Name, val)...).ErrorMessages(field.Errors...)
 		})
 
 	// Select1 - 使用 shadcn Select
 	ed.Field("Select1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			// val, _ := field.Value(obj).(string)
 
 			var items = []shadcn.DefaultOptionItem{}
@@ -242,7 +242,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// Radio1 - 使用 shadcn RadioGroup
 	ed.Field("Radio1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return h.Div(
 				h.Label(field.Label).Class("text-sm font-medium"),
@@ -265,11 +265,11 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// FileInput1 - 使用 shadcn FileInput
 	ed.Field("FileInput1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.FileInput().Attr("name", field.Name).Class("mt-2").ErrorMessages(field.Errors...).Label(field.Label)
 
 		}).
-		SetterFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) (err error) {
+		SetterFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) (err error) {
 			fs := ctx.R.MultipartForm.File[field.Name]
 			if len(fs) == 0 {
 				return
@@ -291,7 +291,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// Combobox1 - 使用 shadcn Combobox
 	ed.Field("Combobox1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return shadcn.Combobox(
 				shadcn.ComboboxAnchor(
@@ -327,14 +327,14 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 		}).
 		Multiple(true)
 	ed.Field("Autocomplete1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return autocomplete1.Label(field.Label).
 				Attr(web.VField(field.FormKey, autocomplete1.ParseValue(field.Value(obj)))...).
 				// Autocomplete1 选择变化时，同步选中项 name 到 TextField1
 				Attr("@update:modelValue", `(val) => { if (Array.isArray(val)) { form['TextField1'] = val.join(', ') } else if (val) { form['TextField1'] = val } }`).
 				ErrorMessages(field.Errors...)
 		}).
-		SetterFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) (err error) {
+		SetterFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) (err error) {
 			values := ctx.R.Form[field.FormKey]
 			obj.(*models.InputDemo).Autocomplete1 = autocomplete1.FormatValue(values)
 			return nil
@@ -343,7 +343,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 	// ButtonGroup1 - 使用 shadcn Button 组合
 	// ButtonGroup1 - 使用 shadcn ButtonGroup
 	ed.Field("ButtonGroup1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return shadcn.ButtonGroup(
 				shadcn.Button(h.Text("Left")).
@@ -369,7 +369,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 		// Badge - 展示各种 Badge 样式
 	ed.Field("Badge").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return h.Div(
 				h.Label(field.Label).Class("text-sm font-medium"),
 				h.Div(
@@ -386,7 +386,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 		})
 	// BadgeSelect - 可选择的 Badge 组
 	ed.Field("BadgeSelect").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 
 			// 辅助函数：根据是否选中返回 variant
@@ -419,14 +419,14 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// DatePicker1 - 使用 shadcn DatePicker
 	ed.Field("DatePicker1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return shadcn.DatePicker().Label(field.Label).ModelValue(val).Attr(web.VField(field.Name, val)...).Class("mt-2").ErrorMessages(field.Errors...)
 		})
 
 	// DatePickerMonth1 - 月份选择器（shadcn DatePicker 暂不支持月份模式，使用普通 DatePicker）
 	ed.Field("DatePickerMonth1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return shadcn.DatePicker().Label(field.Label).ModelValue(val).Attr(web.VField(field.Name, val)...).Class("mt-2").ErrorMessages(field.Errors...).Disabled(field.Disabled)
 
@@ -434,7 +434,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// TimePicker1 - 使用 shadcn TimePicker
 	ed.Field("TimePicker1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return shadcn.TimePicker().Label(field.Label).ModelValue(val).Attr(web.VField(field.Name, val)...).Class("mt-2").ErrorMessages(field.Errors...).Disabled(field.Disabled)
 
@@ -442,7 +442,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// CodeMirror1 - 代码编辑器
 	ed.Field("CodeMirror1").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return codemirror.CodeMirror().
 				Label(field.Label).
@@ -457,7 +457,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 		})
 
 	// 添加必填验证
-	ed.ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	ed.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		demo := obj.(*models.InputDemo)
 		if demo.TextField1 == "" {
 			err.FieldError("TextField1", "TextField1 is required")
@@ -491,7 +491,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// Location - 高德地图选点组件
 	ed.Field("Location").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
 			return h.Div(
 				h.Label("Location").Class("text-sm font-medium"),
@@ -524,7 +524,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	// Detailing 配置（只读详情页）
 	dt := inputDemo.Detailing("Location")
-	dt.Field("Location").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	dt.Field("Location").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		val, _ := field.Value(obj).(string)
 		return amap.AmapDisplay().
 			ApiKey("d806a2f74b0016c8190c71640d44b98d").
@@ -556,14 +556,14 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 		cl.BulkAction("Input Demo Job").
 			ButtonCompFunc(func(ctx *web.EventContext) h.HTMLComponent {
-				return shadcn.Button(h.Text("Input Demo Job")).Class("ml-2").
+				return shadcn.Button(h.Text("Input Demo Job")).Size(shadcn.ButtonSizeSm).
 					Attr("@click", inputDemoJob.URL())
 			})
 	}
 
 	// ListingDialog Selector（列表弹窗选择器）
 	ConfigureDialogCustomerSelector(db, b)
-	ed.Field("SelectedCustomers").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	ed.Field("SelectedCustomers").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		// 从模型读取已保存的 selectedIds
 		demo := obj.(*models.InputDemo)
 		var selectedIds []string

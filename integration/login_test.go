@@ -7,6 +7,7 @@ import (
 
 	"github.com/r0vx/web"
 	"github.com/r0vx/web/multipartestutils"
+	"github.com/r0vx/x/perm"
 	"gorm.io/gorm"
 
 	"example/admin"
@@ -14,7 +15,6 @@ import (
 	"example/models"
 
 	plogin "github.com/r0vx/admin/login"
-	"github.com/r0vx/admin/role"
 )
 
 func TestLogin(t *testing.T) {
@@ -99,7 +99,7 @@ func TestChangePassword(t *testing.T) {
 	h, c := admin.TestHandlerComplex(TestDB, &models.User{
 		Model: gorm.Model{ID: 888},
 		Name:  "viwer@theplant.jp",
-		Roles: []role.Role{
+		Roles: []perm.Role{
 			{
 				Name: models.RoleEditor,
 			},

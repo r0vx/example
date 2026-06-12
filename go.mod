@@ -2,14 +2,6 @@ module example
 
 go 1.25.0
 
-replace github.com/r0vx/admin => ../admin
-
-replace github.com/r0vx/web => ../web
-
-replace github.com/r0vx/x => ../x
-
-replace github.com/r0vx/imaging => ../imaging
-
 require (
 	github.com/bytedance/sonic v1.15.0
 	github.com/go-chi/chi/v5 v5.1.0
@@ -19,9 +11,9 @@ require (
 	github.com/lib/pq v1.10.9
 	// github.com/markbates/goth v1.81.0 // 移除OAuth依赖
 	github.com/ory/ladon v1.3.0
-	github.com/r0vx/admin v0.0.0-00010101000000-000000000000
-	github.com/r0vx/web v0.0.0
-	github.com/r0vx/x v0.0.0-00010101000000-000000000000
+	github.com/r0vx/admin v0.2.2
+	github.com/r0vx/web v0.2.0
+	github.com/r0vx/x v0.2.3
 	github.com/samber/lo v1.51.0
 	github.com/spf13/cast v1.9.2
 	github.com/stretchr/testify v1.11.1
@@ -132,8 +124,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/pquerna/otp v1.5.0 // indirect
-	github.com/r0vx/htmlgo v0.0.0
-	github.com/r0vx/imaging v0.0.0-00010101000000-000000000000 // indirect
+	github.com/r0vx/htmlgo v0.3.0
+	github.com/r0vx/imaging v0.1.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
@@ -172,5 +164,3 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/r0vx/htmlgo => /Users/rowei/Developer/go/htmlgo

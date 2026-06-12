@@ -93,7 +93,7 @@ func (this ListModel) GetListContent(db *gorm.DB, onePageItems *publish.OnePageI
 	return result
 }
 
-func (this ListModel) Sort(array []interface{}) {
+func (this ListModel) Sort(array []any) {
 	var temp []*ListModel
 	sliceutils.Unwrap(array, &temp)
 	sort.Sort(SliceListModel(temp))

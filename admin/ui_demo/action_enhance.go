@@ -1,13 +1,16 @@
 package ui_demo
 
 import (
+	"fmt"
 	"strconv"
 
 	"example/models"
 
 	"github.com/r0vx/admin/notification"
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
+	. "github.com/r0vx/x/ui/shadcn"
 	"gorm.io/gorm"
 )
 
@@ -132,11 +135,12 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 	//   ConfirmPrompt → WizardDemosUpgradeConfirmPrompt
 	//   ConfirmOK/Cancel 不设 → 内置 msgr.OK/msgr.Cancel（zh：确定/取消）。
 	//   .Label("升级"/"重置") 仍是强制字面量（菜单文字）。
-	rm := mb.Listing().RowMenu()
+	rm := mb.Listing().RowMenu().InlineDefaultsInMenu(true)
 	rm.Inline(true)
 
 	rm.RowMenuItem("Upgrade").
 		Icon("arrow-up-circle").
+		AlsoInDrawer(true). // 同时显示在编辑(抽屉)/详情顶部操作区，带当前记录 id
 		Visible(func(obj any, id string, ctx *web.EventContext) bool {
 			d, ok := obj.(*models.WizardDemo)
 			return ok && d.Status != "published" // 已发布则隐藏升级
@@ -149,7 +153,23 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 			return nil
 		})
 
-	rm.RowMenuItem("Reset").
+	rm.RowMenuItem("Upgrade2").
+		Icon("arrow-up-circle").
+		AlsoInDrawer(true). // 同时显示在编辑(抽屉)/详情顶部操作区，带当前记录 id
+		Visible(func(obj any, id string, ctx *web.EventContext) bool {
+			d, ok := obj.(*models.WizardDemo)
+			return ok && d.Status != "published" // 已发布则隐藏升级
+		}).
+		RequiresConfirmation(). // 确认文案走 i18n（WizardDemosUpgradeConfirmTitle/Prompt）
+		UpdateFunc(func(id string, ctx *web.EventContext, r *web.EventResponse) error {
+			// 演示：实际项目中此处应更新 d.Status 字段；这里仅发通知
+			notifier.Success(ctx, r, "已升级商户 #"+id)
+			r.Reload = true
+			return nil
+		})
+
+	rm.RowMenuItem("Reset").AlsoInDrawer(true).
+		IconOnly(true). // 行内只显示 rotate 图标（hover 出名）；抽屉里仍 icon+文字
 		Label("重置").
 		Icon("rotate-ccw").
 		Disabled(func(obj any, id string, ctx *web.EventContext) bool {
@@ -161,4 +181,62 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 			r.Reload = true
 			return nil
 		})
+
+	// OnlyInDrawer 演示：只在编辑/详情抽屉顶部出现，列表行 ⋮ 菜单里不显示
+	rm.RowMenuItem("ViewDetail").
+		OnlyInDrawer(true).
+		Label("查看详情").
+		Icon("eye").
+		UpdateFunc(func(id string, ctx *web.EventContext, r *web.EventResponse) error {
+			notifier.Info(ctx, r, "查看详情 #"+id)
+			return nil
+		})
+
+	// --- OnEvent 演示：行菜单项「声明式」触发自定义事件（非内置 UpdateFunc）---
+	// 按钮外观仍走链式（Icon/Label/Tooltip），点击触发下面注册的 eventBalance，自动带当前行 id。
+	// 与顶部「预存」按钮复用同一事件 → 逻辑只写一处。需额外参数时链式 .EventQuery("k","v")。
+	rm.RowMenuItem("Balance").
+		Icon("wallet").
+		Label("预存").
+		Tooltip("给该商户预存金额").
+		OnEvent("eventBalance")
+
+	// eventBalance：顶部按钮与行菜单「预存」共用的自定义事件 handler。
+	// 演示用发通知示意；实际可弹 dialog 输入金额 / 改余额字段。
+	mb.RegisterEventFunc("eventBalance", func(ctx *web.EventContext) (r web.EventResponse, err error) {
+		id := ctx.R.FormValue(presets.ParamID)
+		notifier.Success(ctx, &r, "预存成功 #"+id)
+		return
+	})
+
+	// 编辑模式
+	ed := mb.Editing(
+		&presets.FieldsSection{
+			Title: "Basic Information",
+			Rows: [][]string{
+				{"Name"},
+				{"Phone"},
+			},
+		},
+	)
+	// 顶部操作按钮
+	ed.TopActionsFunc(func(obj interface{}, ctx *web.EventContext) h.HTMLComponent {
+		var btns []h.HTMLComponent
+		// 预存：取当前记录真实 id（与行菜单「预存」复用 eventBalance 同一事件）
+		id := ""
+		if d, ok := obj.(*models.WizardDemo); ok {
+			id = fmt.Sprint(d.ID)
+		}
+		btns = append(btns,
+			Button(h.Text("预存")).
+				Attr("@click", web.Plaid().EventFunc("eventBalance").
+					Query("id", id).Go()),
+		)
+
+		if len(btns) == 0 {
+			return nil
+		}
+
+		return ButtonGroup(btns...)
+	})
 }

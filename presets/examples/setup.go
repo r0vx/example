@@ -9,10 +9,10 @@ import (
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/admin/presets/actions"
 	"github.com/r0vx/admin/presets/gorm2op"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
 	"github.com/sunfmin/reflectutils"
-	h "github.com/r0vx/htmlgo"
 	"gorm.io/gorm"
 )
 
@@ -194,7 +194,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 	// .BrandTitle("My Admin")
 
 	writeFieldDefaults := p.FieldDefaults(presets.WRITE)
-	writeFieldDefaults.FieldType(&Thumb{}).ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	writeFieldDefaults.FieldType(&Thumb{}).ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		i, err := reflectutils.Get(obj, field.Name)
 		if err != nil {
 			panic(err)
@@ -202,7 +202,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		return h.Text(i.(*Thumb).Name)
 	})
 
-	p.FieldDefaults(presets.LIST).FieldType(&Thumb{}).ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	p.FieldDefaults(presets.LIST).FieldType(&Thumb{}).ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		i, err := reflectutils.Get(obj, field.Name)
 		if err != nil {
 			panic(err)
@@ -210,7 +210,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		return h.Text(i.(*Thumb).Name)
 	})
 
-	p.FieldDefaults(presets.DETAIL).FieldType([]*Event{}).ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	p.FieldDefaults(presets.DETAIL).FieldType([]*Event{}).ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		events := reflectutils.MustGet(obj, field.Name).([]*Event)
 		typeName := reflect.ValueOf(obj).Elem().Type().Name()
 		objId := fmt.Sprint(reflectutils.MustGet(obj, "ID"))
@@ -268,7 +268,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 
 	l := m.Listing("Name", "CompanyID", "ApprovalComment").SearchColumns("name", "email", "description").PerPage(5).SelectableColumns(true)
 	l.Field("Name").Label("列表的名字")
-	l.Field("CompanyID").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	l.Field("CompanyID").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		u := obj.(*Customer)
 		var comp Company
 		err := db.Find(&comp, u.CompanyID).Error
@@ -293,7 +293,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		}
 		err = db.Model(&Customer{}).
 			Where("id IN (?)", selectedIds).
-			Updates(map[string]interface{}{"approved_at": time.Now(), "approval_comment": comment}).Error
+			Updates(map[string]any{"approved_at": time.Now(), "approval_comment": comment}).Error
 		if err != nil {
 			ctx.Flash = err.Error()
 		} else {
@@ -390,7 +390,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 	})
 
 	ef := m.Editing("Name", "CompanyID", "LanguageCode").
-		ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+		ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 			cu := obj.(*Customer)
 			if len(cu.Name) < 5 {
 				err.FieldError("Name", "input more than 5 chars")
@@ -398,7 +398,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 			}
 			return
 		})
-	ef.Field("LanguageCode").Label("语言").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	ef.Field("LanguageCode").Label("语言").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		u := obj.(*Customer)
 		var langs []Language
 		err := db.Find(&langs).Error
@@ -421,7 +421,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 			Label(field.Label)
 	})
 
-	ef.Field("CompanyID").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	ef.Field("CompanyID").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		u := obj.(*Customer)
 		var companies []*Company
 		err := db.Find(&companies).Error
@@ -446,7 +446,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 
 	dp := m.Detailing("MainInfo", "Details", "Cards", "Events")
 
-	dp.FetchFunc(func(obj interface{}, id string, ctx *web.EventContext) (r interface{}, err error) {
+	dp.FetchFunc(func(obj any, id string, ctx *web.EventContext) (r any, err error) {
 		cus := &Customer{}
 		err = db.Find(cus, id).Error
 		if err != nil {
@@ -463,7 +463,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		return
 	})
 
-	dp.Field("MainInfo").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	dp.Field("MainInfo").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		cu := obj.(*Customer)
 
 		title := cu.Name
@@ -516,7 +516,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		)
 	})
 
-	dp.Field("Details").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	dp.Field("Details").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		cu := obj.(*Customer)
 		cusID := fmt.Sprint(cu.ID)
 
@@ -562,7 +562,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		)
 	})
 
-	dp.Field("Cards").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	dp.Field("Cards").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		cu := obj.(*Customer)
 		cusID := fmt.Sprint(cu.ID)
 
@@ -615,7 +615,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		}
 
 		err = db.Model(&Customer{}).Where("id = ?", id).
-			Updates(map[string]interface{}{"term_agreed_at": time.Now()}).Error
+			Updates(map[string]any{"term_agreed_at": time.Now()}).Error
 		if err == nil {
 			r.Emit(
 				presets.NotifModelsUpdated(&Customer{}),
@@ -643,7 +643,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 	p.Model(&Note{}).
 		InMenu(false).
 		Editing("Content").
-		SetterFunc(func(obj interface{}, ctx *web.EventContext) {
+		SetterFunc(func(obj any, ctx *web.EventContext) {
 			note := obj.(*Note)
 			note.SourceID = ctx.ParamAsInt("model_id")
 			note.SourceType = ctx.R.FormValue("model")
@@ -652,7 +652,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 	p.Model(&Event{}).
 		InMenu(false).
 		Editing("Type", "Description").
-		SetterFunc(func(obj interface{}, ctx *web.EventContext) {
+		SetterFunc(func(obj any, ctx *web.EventContext) {
 			note := obj.(*Event)
 			note.SourceID = ctx.ParamAsInt("model_id")
 			note.SourceType = ctx.R.FormValue("model")
@@ -662,7 +662,7 @@ func Preset1(db *gorm.DB) (r *presets.Builder) {
 		InMenu(false)
 
 	ccedit := cc.Editing("ExpireYearMonth", "Phone", "Email").
-		SetterFunc(func(obj interface{}, ctx *web.EventContext) {
+		SetterFunc(func(obj any, ctx *web.EventContext) {
 			card := obj.(*CreditCard)
 			card.CustomerID = ctx.ParamAsInt("customerID")
 		})

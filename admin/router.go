@@ -14,7 +14,7 @@ import (
 
 	"example/models"
 
-	"github.com/r0vx/admin/role"
+	"github.com/r0vx/x/perm"
 )
 
 //go:embed assets/favicon.ico
@@ -38,7 +38,7 @@ func TestHandlerComplex(db *gorm.DB, u *models.User, enableWork bool, opts ...Co
 	if u == nil {
 		u = &models.User{
 			Model: gorm.Model{ID: 888},
-			Roles: []role.Role{
+			Roles: []perm.Role{
 				{
 					Name: models.RoleAdmin,
 				},

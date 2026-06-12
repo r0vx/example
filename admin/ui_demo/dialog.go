@@ -65,7 +65,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 	ed := mb.Editing("Title", "Status", "Priority", "Notes", "RelatedID")
 
 	ed.Field("Title").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Input().
 				Label(field.Label).
 				Placeholder("请输入标题").
@@ -74,7 +74,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 		})
 
 	ed.Field("Status").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Select(
 				shadcn.SelectTrigger(shadcn.SelectValue().Placeholder("选择状态")),
 				shadcn.SelectContent(
@@ -88,7 +88,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 		})
 
 	ed.Field("Priority").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Select(
 				shadcn.SelectTrigger(shadcn.SelectValue().Placeholder("选择优先级")),
 				shadcn.SelectContent(
@@ -104,7 +104,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 		})
 
 	ed.Field("Notes").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Textarea().
 				Label(field.Label).
 				Placeholder("请输入备注...").
@@ -114,7 +114,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 
 	// RelatedID 字段：点击按钮打开 ListingCompo Dialog 选择关联记录
 	ed.Field("RelatedID").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return h.Div(
 				shadcn.Input().
 					Label(field.Label).
@@ -124,7 +124,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 			).Class("flex flex-col gap-2")
 		})
 
-	ed.ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	ed.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		demo := obj.(*models.DialogDemo)
 		if demo.Title == "" {
 			err.FieldError("Title", "标题不能为空")
@@ -170,7 +170,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 		}
 	})
 
-	lb.Field("Status").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	lb.Field("Status").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		demo := obj.(*models.DialogDemo)
 		var variant shadcn.BadgeVariant
 		switch demo.Status {
@@ -359,7 +359,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 	).Drawer(true) // 详情页用 Drawer 打开（和 Dialog 对比）
 	dt.EnableRefreshOnUpdate()
 
-	dt.Field("Status").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	dt.Field("Status").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		demo := obj.(*models.DialogDemo)
 		var variant string
 		switch demo.Status {
@@ -374,7 +374,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 	})
 
 	// 事件流向图：展示 NotifModelsUpdated 事件的流转机制
-	dt.Field("EventFlowGraph").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	dt.Field("EventFlowGraph").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		return h.Div(
 			h.H3("事件流向").Class("text-lg font-semibold mb-2"),
 			unovis.Graph().
@@ -428,7 +428,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 		).Class("mb-4")
 	})
 
-	dt.TopActionsFunc(func(obj interface{}, ctx *web.EventContext) h.HTMLComponent {
+	dt.TopActionsFunc(func(obj any, ctx *web.EventContext) h.HTMLComponent {
 		var actionBtns h.HTMLComponents
 
 		// 确认支付
@@ -586,7 +586,7 @@ func ConfigDialogDemoSelector(pb *presets.Builder, db *gorm.DB) {
 		}
 	})
 
-	lb.Field("Status").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	lb.Field("Status").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		demo := obj.(*models.DialogDemo)
 		var variant shadcn.BadgeVariant
 		switch demo.Status {

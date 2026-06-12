@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
-	"github.com/r0vx/admin/role"
 	"github.com/r0vx/x/login"
+	"github.com/r0vx/x/perm"
 	"gorm.io/gorm"
 )
 
@@ -40,7 +40,7 @@ type User struct {
 
 	Name             string
 	Company          string
-	Roles            []role.Role `gorm:"many2many:user_role_join;"`
+	Roles            []perm.Role `gorm:"many2many:user_role_join;"`
 	Status           string
 	UpdatedAt        time.Time
 	CreatedAt        time.Time

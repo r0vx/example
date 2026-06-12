@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnTreeViewDemo 虚拟模型
@@ -29,11 +29,11 @@ func configTreeView(b *presets.Builder) {
 // shadcnTreeViewBody 树形组件演示页面
 func shadcnTreeViewBody(ctx *web.EventContext) h.HTMLComponent {
 	// 示例树形数据
-	treeData := []map[string]interface{}{
+	treeData := []map[string]any{
 		{
 			"id":    "1",
 			"title": "文档",
-			"children": []map[string]interface{}{
+			"children": []map[string]any{
 				{
 					"id":    "1-1",
 					"title": "介绍",
@@ -41,7 +41,7 @@ func shadcnTreeViewBody(ctx *web.EventContext) h.HTMLComponent {
 				{
 					"id":    "1-2",
 					"title": "快速开始",
-					"children": []map[string]interface{}{
+					"children": []map[string]any{
 						{"id": "1-2-1", "title": "安装"},
 						{"id": "1-2-2", "title": "配置"},
 					},
@@ -51,7 +51,7 @@ func shadcnTreeViewBody(ctx *web.EventContext) h.HTMLComponent {
 		{
 			"id":    "2",
 			"title": "组件",
-			"children": []map[string]interface{}{
+			"children": []map[string]any{
 				{"id": "2-1", "title": "Button"},
 				{"id": "2-2", "title": "Input"},
 				{"id": "2-3", "title": "Dialog"},
@@ -110,11 +110,11 @@ func shadcnTreeViewBody(ctx *web.EventContext) h.HTMLComponent {
 			h.H2("自定义字段"),
 			h.P(h.Text("支持自定义值和子节点字段名")).Class("text-muted-foreground mb-4"),
 			TreeView().
-				Items([]map[string]interface{}{
+				Items([]map[string]any{
 					{
 						"value": "node1",
 						"name":  "节点 1",
-						"items": []map[string]interface{}{
+						"items": []map[string]any{
 							{"value": "node1-1", "name": "子节点 1-1"},
 							{"value": "node1-2", "name": "子节点 1-2"},
 						},

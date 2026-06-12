@@ -18,13 +18,13 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB) {
 	lb := b.Listing("ID", "CreatedAt", "ConfirmedAt", "PaymentMethod", "Status", "Source").
 		SearchColumns("source")
 
-	lb.Field("CreatedAt").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	lb.Field("CreatedAt").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		order := obj.(*models.Order)
 		v := order.CreatedAt.Local().Format("2006-01-02 15:04:05")
 		return h.Text(v)
 	}).Label("Date Created")
 
-	lb.Field("ConfirmedAt").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	lb.Field("ConfirmedAt").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		order := obj.(*models.Order)
 		if order.ConfirmedAt != nil {
 			return h.Text(order.ConfirmedAt.Local().Format("2006-01-02 15:04:05"))

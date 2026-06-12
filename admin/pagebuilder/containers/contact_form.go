@@ -2,8 +2,8 @@ package containers
 
 import (
 	"github.com/r0vx/admin/pagebuilder"
-	"github.com/r0vx/web"
 	. "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
 )
 
 // ContactForm 联系表单容器模型
@@ -32,7 +32,7 @@ func (*ContactForm) TableName() string {
 // RegisterContactFormContainer 注册联系表单容器
 func RegisterContactFormContainer(pb *pagebuilder.Builder) {
 	vb := pb.RegisterContainer("ContactForm").
-		RenderFunc(func(obj interface{}, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
+		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*ContactForm)
 			return ContactFormBody(v, input)
 		})

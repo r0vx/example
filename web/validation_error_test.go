@@ -150,7 +150,7 @@ func TestValidationField(t *testing.T) {
 		return
 	}
 	nameField := errs["Name"]
-	if nameField == nil || len(nameField) == 0 {
+	if len(nameField) == 0 {
 		t.Fail()
 		return
 	}

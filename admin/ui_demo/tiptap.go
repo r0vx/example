@@ -7,9 +7,9 @@ import (
 
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/admin/tiptapeditor"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 	"gorm.io/gorm"
 )
 
@@ -58,7 +58,7 @@ func ConfigTiptapDemo(b *presets.Builder, db *gorm.DB) {
 
 	// Title — 普通输入框
 	ed.Field("Title").Label("标题").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Input().
 				Label(field.Label).
 				Placeholder("请输入标题").
@@ -68,7 +68,7 @@ func ConfigTiptapDemo(b *presets.Builder, db *gorm.DB) {
 
 	// Body — tiptap 富文本编辑器（含 MediaBox 图片集成）
 	ed.Field("Body").Label("正文（Tiptap 富文本）").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return tiptapeditor.TiptapEditor(db, field.FormKey).
 				Value(fmt.Sprint(field.Value(obj))).
 				Label(field.Label).
@@ -79,7 +79,7 @@ func ConfigTiptapDemo(b *presets.Builder, db *gorm.DB) {
 
 	// Summary — 普通 Textarea（对比）
 	ed.Field("Summary").Label("摘要（纯文本）").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Textarea().
 				Label(field.Label).
 				Placeholder("请输入摘要...").
@@ -88,7 +88,7 @@ func ConfigTiptapDemo(b *presets.Builder, db *gorm.DB) {
 		})
 
 	// 验证
-	ed.ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	ed.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		demo := obj.(*models.TiptapDemo)
 		if demo.Title == "" {
 			err.FieldError("Title", "标题不能为空")

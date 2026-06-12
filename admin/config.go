@@ -55,7 +55,6 @@ import (
 	"github.com/r0vx/admin/presets/gorm2op"
 	"github.com/r0vx/admin/publish"
 	"github.com/r0vx/admin/redirection"
-	"github.com/r0vx/admin/role"
 	adminrole "github.com/r0vx/admin/role"
 	"github.com/r0vx/admin/seo"
 	"github.com/r0vx/admin/utils"
@@ -120,7 +119,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 		&models.InputDemo{},
 		&models.User{},
 		&models.ListModel{},
-		&role.Role{},
+		&perm.Role{},
 		&perm.DefaultDBPolicy{},
 		&models.Customer{},
 		&models.Address{},
@@ -381,7 +380,8 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	// leem.Listing().PageFunc(pf)
 	// leem.RegisterEventFunc("save", sf)
 
-	crud_demo.ConfigNestedFieldDemo(b, db)
+	crud_demo.ConfigNestedFieldDemo(b, db, ab)
+	crud_demo.ConfigMembershipCard(b, db, ab)
 
 	pageBuilder := pagebuilder_demo.ConfigPageBuilderDemo(b, db, l10nBuilder)
 
@@ -447,6 +447,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	ui_demo.ConfigListingWrapDemo(b, db)
 	ui_demo.ConfigTreeListingDemo(b, db)
 	ui_demo.ConfigAvatarUploadDemo(b, db)
+	ui_demo.ConfigSiteSettingDemo(b, db) // Singleton(true) 单例配置页范例
 
 	crud_demo.ConfigUser(b, ab, db, publisher, loginSessionBuilder)
 	b.Use(
@@ -575,6 +576,7 @@ func configMenuOrder(b *presets.Builder) {
 			"qor-seo-settings",
 			"List Editor Example",
 			"customers",
+			"membership-cards",
 			"ListModels",
 			"MicrositeModels",
 			"L10nModel",
@@ -586,6 +588,7 @@ func configMenuOrder(b *presets.Builder) {
 			"listing-wrap-demo",
 			"tree-listing-demo",
 			"avatar-upload-demo",
+			"site-setting",
 		).Icon("list"),
 		b.MenuGroup("Graph Demo").SubItems(
 			"graph-demos",
@@ -628,11 +631,27 @@ func configMenuOrder(b *presets.Builder) {
 	)
 
 	b.SidebarBrandFunc(func(ctx *web.EventContext) h.HTMLComponent {
-		return h.A().Href("/").Class("flex items-center gap-2 px-2").Children(
-			// 完整 Logo（展开时显示）
-			h.Img("/assets/logo.svg").Class("h-8 shrink-0 group-data-[collapsible=icon]:hidden").Style("filter: brightness(0);"),
-			// 图标 Logo（折叠时显示）
-			h.Img("/assets/logo-icon.svg").Class("hidden group-data-[collapsible=icon]:block h-8 w-8 shrink-0").Style("filter: brightness(0);"),
+		// 系统名（回退到默认品牌名）
+		name := b.GetBrandTitle()
+		if name == "" {
+			name = "r0vx Admin"
+		}
+		// 副标题：当前登录用户名（折叠态随文字块一起隐藏）
+		subtitle := ""
+		if u := getCurrentUser(ctx.R); u != nil {
+			subtitle = u.Name
+		}
+		// 参考 payManage 排版：圆角方形 logo 块（bg-primary 实色 + 白色 logo-icon）+ 双行文字
+		return h.A().Href("/").Class("flex w-full items-center gap-2 px-2 py-1 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center").Children(
+			// 圆角方形 logo 块（折叠态常驻）
+			h.Div(
+				h.Img("/assets/logo-icon.svg").Class("size-5").Style("filter: brightness(0) invert(1);"),
+			).Class("flex aspect-square size-8 items-center justify-center rounded-lg bg-primary shrink-0"),
+			// 文字块：系统名(粗) + 当前用户名(小灰)；折叠态隐藏只剩图标
+			h.Div(
+				h.Span(name).Class("block truncate text-sm font-semibold leading-tight"),
+				h.Span(subtitle).Class("block truncate text-xs text-muted-foreground leading-tight"),
+			).Class("grid flex-1 text-left group-data-[collapsible=icon]:hidden"),
 		)
 	})
 }

@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnDataTableDemo 虚拟模型
@@ -29,7 +29,7 @@ func configDataTable(b *presets.Builder) {
 // shadcnDataTableBody DataTable 演示页面
 func shadcnDataTableBody(ctx *web.EventContext) h.HTMLComponent {
 	// 示例数据
-	users := []map[string]interface{}{
+	users := []map[string]any{
 		{"id": "1", "name": "张三", "email": "zhangsan@example.com", "role": "管理员", "status": "active"},
 		{"id": "2", "name": "李四", "email": "lisi@example.com", "role": "编辑", "status": "active"},
 		{"id": "3", "name": "王五", "email": "wangwu@example.com", "role": "访客", "status": "inactive"},
@@ -163,7 +163,7 @@ func shadcnDataTableBody(ctx *web.EventContext) h.HTMLComponent {
 			h.H2("Empty State"),
 			h.P(h.Text("无数据时的显示")).Class("text-muted-foreground mb-4"),
 			DataTable().
-				Data([]map[string]interface{}{}).
+				Data([]map[string]any{}).
 				Columns(columns).
 				EmptyText("暂无数据"),
 		).Class("demo-section"),

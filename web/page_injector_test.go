@@ -23,12 +23,7 @@ var cases = []struct {
 		operation: func(b *web.PageInjector) {
 			b.Title("Hello")
 		},
-		expected: `<title>Hello</title>
-
-<meta charset='utf8'>
-
-<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-		`,
+		expected: `<title>Hello</title><meta charset='utf8'><meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>`,
 	},
 	{
 		name: "title and charset",
@@ -36,12 +31,7 @@ var cases = []struct {
 			b.Title("Hello")
 			b.Meta(web.MetaKey("charset"), "charset", "shiftjis")
 		},
-		expected: `<title>Hello</title>
-
-<meta charset='shiftjis'>
-
-<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-`,
+		expected: `<title>Hello</title><meta charset='shiftjis'><meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>`,
 	},
 	{
 		name: "title and charset double",
@@ -51,14 +41,7 @@ var cases = []struct {
 			b.Meta(web.MetaKey("charset"), "charset", "utf8")
 			b.MetaNameContent("keywords", "Hello")
 		},
-		expected: `<title>Hello</title>
-
-<meta charset='utf8'>
-
-<meta name='keywords' content='Hello'>
-
-<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-`,
+		expected: `<title>Hello</title><meta charset='utf8'><meta name='keywords' content='Hello'><meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>`,
 	},
 
 	{
@@ -86,11 +69,7 @@ var cases = []struct {
 
   gtag('config', 'UA-123123-1');
 </script>
-
-<meta charset='utf8'>
-
-<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-`,
+<meta charset='utf8'><meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>`,
 	},
 }
 

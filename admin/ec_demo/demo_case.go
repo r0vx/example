@@ -5,9 +5,9 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 	"gorm.io/gorm"
 )
 
@@ -70,7 +70,7 @@ type (
 	}
 )
 
-func (c *FieldData) Scan(value interface{}) error {
+func (c *FieldData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -81,7 +81,7 @@ func (c *FieldData) Value() (driver.Value, error) {
 	return sonic.Marshal(c)
 }
 
-func (c *FieldTextareaData) Scan(value interface{}) error {
+func (c *FieldTextareaData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -96,14 +96,14 @@ func (c *FieldPasswordData) Value() (driver.Value, error) {
 	return sonic.Marshal(c)
 }
 
-func (c *FieldPasswordData) Scan(value interface{}) error {
+func (c *FieldPasswordData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
 	return nil
 }
 
-func (c *FieldNumberData) Scan(value interface{}) error {
+func (c *FieldNumberData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -114,7 +114,7 @@ func (c *FieldNumberData) Value() (driver.Value, error) {
 	return sonic.Marshal(c)
 }
 
-func (c *SelectData) Scan(value interface{}) error {
+func (c *SelectData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -125,7 +125,7 @@ func (c *SelectData) Value() (driver.Value, error) {
 	return sonic.Marshal(c)
 }
 
-func (c *CheckboxData) Scan(value interface{}) error {
+func (c *CheckboxData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -136,7 +136,7 @@ func (c *CheckboxData) Value() (driver.Value, error) {
 	return sonic.Marshal(c)
 }
 
-func (c *DatepickerData) Scan(value interface{}) error {
+func (c *DatepickerData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -147,7 +147,7 @@ func (c *DatepickerData) Value() (driver.Value, error) {
 	return sonic.Marshal(c)
 }
 
-func (c *PaginationData) Scan(value interface{}) error {
+func (c *PaginationData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -158,7 +158,7 @@ func (c *PaginationData) Value() (driver.Value, error) {
 	return sonic.Marshal(c)
 }
 
-func (c *TabsData) Scan(value interface{}) error {
+func (c *TabsData) Scan(value any) error {
 	if bytes, ok := value.([]byte); ok {
 		return sonic.Unmarshal(bytes, c)
 	}
@@ -176,7 +176,7 @@ func ConfigureDemoCase(b *presets.Builder, db *gorm.DB) {
 		panic(err)
 	}
 	mb := b.Model(&DemoCase{})
-	mb.Editing("Name").ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	mb.Editing("Name").ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		p := obj.(*DemoCase)
 		if p.Name == "" {
 			err.FieldError("Name", "Name Can`t Empty")
@@ -195,7 +195,7 @@ func ConfigureDemoCase(b *presets.Builder, db *gorm.DB) {
 	// Input 组件演示
 	inputSection := presets.NewSectionBuilder(mb, "InputSection").
 		Label("Input Components").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return h.Div(
 				h.H2("Shadcn Input Components").Class("text-xl font-bold mb-4"),
 				h.Div(
@@ -211,7 +211,7 @@ func ConfigureDemoCase(b *presets.Builder, db *gorm.DB) {
 	// Button 组件演示
 	buttonSection := presets.NewSectionBuilder(mb, "ButtonSection").
 		Label("Button Components").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return h.Div(
 				h.H2("Shadcn Button Components").Class("text-xl font-bold mb-4"),
 				h.Div(
@@ -229,7 +229,7 @@ func ConfigureDemoCase(b *presets.Builder, db *gorm.DB) {
 	// Dialog 组件演示
 	dialogSection := presets.NewSectionBuilder(mb, "DialogSection").
 		Label("Dialog Components").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return h.Div(
 				h.H2("Shadcn Dialog Components").Class("text-xl font-bold mb-4"),
 				shadcn.AlertDialog(

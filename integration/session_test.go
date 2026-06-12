@@ -18,7 +18,7 @@ import (
 
 	"github.com/r0vx/admin/activity"
 	"github.com/r0vx/admin/login"
-	"github.com/r0vx/admin/role"
+	"github.com/r0vx/x/perm"
 )
 
 var sessionData = gofixtures.Data(gofixtures.Sql(`
@@ -31,7 +31,7 @@ func TestSession(t *testing.T) {
 	_, conf := admin.TestHandlerComplex(TestDB, &models.User{
 		Model: gorm.Model{ID: 1},
 		Name:  "qor@theplant.jp",
-		Roles: []role.Role{
+		Roles: []perm.Role{
 			{
 				Model: gorm.Model{ID: 1},
 				Name:  models.RoleAdmin,

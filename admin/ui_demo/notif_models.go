@@ -163,7 +163,7 @@ func ConfigNotifDemo(b *presets.Builder, db *gorm.DB) {
 	// 事件处理函数中 Emit 后，列表会自动刷新。
 
 	mb.Listing().Field("Status").StopClick().ComponentFunc(
-		func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*NotifDemo)
 			onclick := web.Plaid().
 				EventFunc("notifDemoToggleStatus").

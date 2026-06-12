@@ -5,10 +5,10 @@ import (
 
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
+	. "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
 	"github.com/sunfmin/reflectutils"
-	. "github.com/r0vx/htmlgo"
 )
 
 // VideoBanner 视频横幅容器模型
@@ -33,7 +33,7 @@ func (*VideoBanner) TableName() string {
 // RegisterVideoBannerContainer 注册视频横幅容器
 func RegisterVideoBannerContainer(pb *pagebuilder.Builder) {
 	vb := pb.RegisterContainer("VideoBanner").Group("Content").
-		RenderFunc(func(obj interface{}, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
+		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*VideoBanner)
 			return VideoBannerBody(v, input)
 		})

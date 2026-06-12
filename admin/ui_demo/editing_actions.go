@@ -44,7 +44,7 @@ func ConfigEditingActionsDemo(b *presets.Builder, db *gorm.DB) {
 	lb.SearchColumns("title")
 	lb.PerPage(10)
 
-	lb.Field("Status").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	lb.Field("Status").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		demo := obj.(*models.EditingActionsDemo)
 		var variant shadcn.BadgeVariant
 		switch demo.Status {
@@ -64,7 +64,7 @@ func ConfigEditingActionsDemo(b *presets.Builder, db *gorm.DB) {
 	ed := mb.Editing("Title", "Status", "Content")
 
 	ed.Field("Title").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Input().
 				Label(field.Label).
 				Placeholder("请输入标题").
@@ -73,7 +73,7 @@ func ConfigEditingActionsDemo(b *presets.Builder, db *gorm.DB) {
 		})
 
 	ed.Field("Status").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Select(
 				shadcn.SelectTrigger(shadcn.SelectValue().Placeholder("选择状态")),
 				shadcn.SelectContent(
@@ -87,7 +87,7 @@ func ConfigEditingActionsDemo(b *presets.Builder, db *gorm.DB) {
 		})
 
 	ed.Field("Content").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Textarea().
 				Label(field.Label).
 				Placeholder("请输入内容...").
@@ -96,7 +96,7 @@ func ConfigEditingActionsDemo(b *presets.Builder, db *gorm.DB) {
 				ErrorMessages(field.Errors...)
 		})
 
-	ed.ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	ed.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		demo := obj.(*models.EditingActionsDemo)
 		if demo.Title == "" {
 			err.FieldError("Title", "标题不能为空")
@@ -111,7 +111,7 @@ func ConfigEditingActionsDemo(b *presets.Builder, db *gorm.DB) {
 	// 默认底部只有 [保存] 按钮。这里替换为 [保存草稿] + [提交审核] 两个按钮。
 	// 保存按钮复用框架的 actions.Update 事件（触发 ValidateFunc + SaveFunc 流程）。
 	// 保存草稿通过自定义 EventFunc 实现，跳过 ValidateFunc 直接写库。
-	ed.ActionsFunc(func(obj interface{}, ctx *web.EventContext) h.HTMLComponent {
+	ed.ActionsFunc(func(obj any, ctx *web.EventContext) h.HTMLComponent {
 		demo := obj.(*models.EditingActionsDemo)
 		id := fmt.Sprint(demo.ID)
 
@@ -144,7 +144,7 @@ func ConfigEditingActionsDemo(b *presets.Builder, db *gorm.DB) {
 	b.GetWebBuilder().RegisterEventFunc("editingActionsDemo_saveDraft", func(ctx *web.EventContext) (r web.EventResponse, err error) {
 		id := ctx.R.FormValue("id")
 		if err = db.Model(&models.EditingActionsDemo{}).Where("id = ?", id).
-			Updates(map[string]interface{}{
+			Updates(map[string]any{
 				"status":  "draft",
 				"title":   ctx.R.FormValue("Title"),
 				"content": ctx.R.FormValue("Content"),

@@ -18,7 +18,7 @@ func configureSeo(pb *presets.Builder, db *gorm.DB, locales ...string) {
 	seoBuilder = seo.New(db, seo.WithLocales(locales...)).AutoMigrate()
 	seoBuilder.RegisterSEO("Post", &models.Post{}).RegisterContextVariable(
 		"Title",
-		func(object interface{}, _ *seo.Setting, _ *http.Request) string {
+		func(object any, _ *seo.Setting, _ *http.Request) string {
 			if article, ok := object.(models.Post); ok {
 				return article.Title
 			}

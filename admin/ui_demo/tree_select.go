@@ -5,9 +5,9 @@ import (
 	"example/models"
 
 	"github.com/r0vx/admin/presets"
-	shadcn "github.com/r0vx/x/ui/shadcn"
-	"github.com/r0vx/web"
 	h "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
+	shadcn "github.com/r0vx/x/ui/shadcn"
 	"gorm.io/gorm"
 )
 
@@ -58,7 +58,7 @@ func ConfigTreeSelectDemo(b *presets.Builder, db *gorm.DB) {
 	editing := mb.Editing("Name", "SeriesIDs")
 
 	// SeriesIDs 字段 — Checkbox TreeView
-	editing.Field("SeriesIDs").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	editing.Field("SeriesIDs").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		demo := obj.(*models.TreeSelectDemo)
 
 		// 从关联表读取已选的车系 ID
@@ -89,7 +89,7 @@ func ConfigTreeSelectDemo(b *presets.Builder, db *gorm.DB) {
 					Attr("name", "SeriesIDs"),
 			),
 		).Class("mb-4")
-	}).SetterFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) (err error) {
+	}).SetterFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) (err error) {
 		// 从表单取 SeriesIDs JSON 字符串，解析后保存到关联表
 		demo := obj.(*models.TreeSelectDemo)
 		seriesJSON := ctx.R.FormValue("SeriesIDs")

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/r0vx/admin/pagebuilder"
-	"github.com/r0vx/web"
 	. "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
 )
 
 // WebFooter 页脚容器模型
@@ -23,7 +23,7 @@ func (*WebFooter) TableName() string {
 // RegisterFooter 注册页脚容器
 func RegisterFooter(pb *pagebuilder.Builder) {
 	footer := pb.RegisterContainer("Footer").
-		RenderFunc(func(obj interface{}, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
+		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			footer := obj.(*WebFooter)
 			return FooterTemplate(footer, input)
 		})

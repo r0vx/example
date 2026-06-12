@@ -7,9 +7,9 @@ import (
 
 	"github.com/r0vx/admin/autocomplete"
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 	"gorm.io/gorm"
 )
 
@@ -169,13 +169,13 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 
 	// 列表自定义字段：显示关联的产品/分类名称
 	listing.Field("ProductName").Label("产品").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*models.AutocompleteDemo)
 			return h.Td(h.Text(demo.ProductName))
 		})
 
 	listing.Field("CategoryName").Label("分类").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*models.AutocompleteDemo)
 			return h.Td(h.Text(demo.CategoryName))
 		})
@@ -187,7 +187,7 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 
 	// Title — 基本输入框
 	ed.Field("Title").Label("标题").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			return shadcn.Input().
 				Label(field.Label).
 				Placeholder("请输入标题").
@@ -198,7 +198,7 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 	// AssigneeID — 静态 items + icon 头像演示
 	// 展示 DefaultOptionItem 的 Icon 字段，每个选项前显示圆形头像
 	ed.Field("AssigneeID").Label("负责人").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			// 静态用户列表，带头像 URL
 			items := []shadcn.DefaultOptionItem{
 				{Text: "张三", Value: "zhangsan", Icon: "https://api.dicebear.com/9.x/avataaars/svg?seed=zhangsan"},
@@ -229,7 +229,7 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 	//
 	// API 端点由 Part 1 注册的 ab.Model(&models.Product{}) 自动生成。
 	ed.Field("ProductID").Label("关联产品").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*models.AutocompleteDemo)
 
 			// 编辑时回显：查询已选中的产品信息，作为初始 items
@@ -259,7 +259,7 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 	// ProductIDs — 多选模式演示（Multiple(true)）
 	// 值以 JSON 数组字符串存储，如 ["1","3"]
 	ed.Field("ProductIDs").Label("关联产品（多选）").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*models.AutocompleteDemo)
 
 			// 解析已存储的 JSON 数组，查询回显数据
@@ -285,21 +285,21 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 				RemoteItemValue("id").
 				RemoteItemText("name").
 				Items(selectedItems).
-				Multiple(true).                              // 启用多选
-				Attr(web.VField(field.FormKey, ids)...).     // 传 []string，Vue 端接收数组
+				Multiple(true).                          // 启用多选
+				Attr(web.VField(field.FormKey, ids)...). // 传 []string，Vue 端接收数组
 				ErrorMessages(field.Errors...)
-		}).SetterFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) (err error) {
-			// Plaid 将数组值作为重复 form field 提交（ProductIDs=1&ProductIDs=3）
-			// 用 ctx.R.Form 获取所有值，再用 FormatValue 转为 JSON 数组字符串存储
-			demo := obj.(*models.AutocompleteDemo)
-			values := ctx.R.Form[field.Name]
-			demo.ProductIDs = shadcn.Autocomplete().FormatValue(values)
-			return
-		})
+		}).SetterFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) (err error) {
+		// Plaid 将数组值作为重复 form field 提交（ProductIDs=1&ProductIDs=3）
+		// 用 ctx.R.Form 获取所有值，再用 FormatValue 转为 JSON 数组字符串存储
+		demo := obj.(*models.AutocompleteDemo)
+		values := ctx.R.Form[field.Name]
+		demo.ProductIDs = shadcn.Autocomplete().FormatValue(values)
+		return
+	})
 
 	// CategoryID — 同理，使用 RemoteURL 声明式远程搜索
 	ed.Field("CategoryID").Label("关联分类").
-		ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			demo := obj.(*models.AutocompleteDemo)
 
 			var selectedItems []shadcn.DefaultOptionItem
@@ -327,7 +327,7 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 
 	// 保存前钩子：写入冗余名称字段（方便列表展示）
 	ed.WrapSaveFunc(func(in presets.SaveFunc) presets.SaveFunc {
-		return func(obj interface{}, id string, ctx *web.EventContext) error {
+		return func(obj any, id string, ctx *web.EventContext) error {
 			demo := obj.(*models.AutocompleteDemo)
 			if demo.ProductID > 0 {
 				var p models.Product
@@ -346,7 +346,7 @@ func ConfigAutocompleteDemo(b *presets.Builder, db *gorm.DB) *autocomplete.Build
 	})
 
 	// 验证
-	ed.ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	ed.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		demo := obj.(*models.AutocompleteDemo)
 		if demo.Title == "" {
 			err.FieldError("Title", "标题不能为空")

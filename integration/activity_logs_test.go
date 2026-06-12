@@ -6,14 +6,13 @@ import (
 	"testing"
 
 	. "github.com/r0vx/web/multipartestutils"
+	"github.com/r0vx/x/perm"
 	"github.com/theplant/gofixtures"
 	"gorm.io/gorm"
 
 	"example/admin"
 
 	"example/models"
-
-	"github.com/r0vx/admin/role"
 )
 
 var activityLogsData = gofixtures.Data(gofixtures.Sql(`
@@ -29,7 +28,7 @@ func TestActivityLogs(t *testing.T) {
 	h := admin.TestHandler(TestDB, &models.User{
 		Model: gorm.Model{ID: 888},
 		Name:  "viwer@theplant.jp",
-		Roles: []role.Role{
+		Roles: []perm.Role{
 			{
 				Name: models.RoleEditor,
 			},

@@ -9,6 +9,7 @@ import (
 	"github.com/theplant/gofixtures"
 
 	"example/admin"
+	"example/admin/ec_demo"
 
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/admin/presets/actions"
@@ -45,7 +46,7 @@ func TestDemoCase(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := admin.DemoCase{}
+				m := ec_demo.DemoCase{}
 				TestDB.Order("id desc").First(&m)
 				if m.Name != "test" {
 					t.Fatalf("Create Demo Case Failed: %v", m)
@@ -90,7 +91,7 @@ func TestDemoCase(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := admin.DemoCase{}
+				m := ec_demo.DemoCase{}
 				TestDB.Order("id desc").First(&m, 1)
 				if m.FieldData.TextValidate != "12345" {
 					t.Fatalf("Update Demo Case Field Failed: %v", m.FieldData)
@@ -128,7 +129,7 @@ func TestDemoCase(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := admin.DemoCase{}
+				m := ec_demo.DemoCase{}
 				TestDB.Order("id desc").First(&m, 1)
 				if m.FieldTextareaData.TextareaValidate != "1234567890" {
 					t.Fatalf("Update Demo Case Field Failed: %v", m.FieldTextareaData)
@@ -165,7 +166,7 @@ func TestDemoCase(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := admin.DemoCase{}
+				m := ec_demo.DemoCase{}
 				TestDB.Order("id desc").First(&m, 1)
 				if m.FieldPasswordData.Password != "12345" {
 					t.Fatalf("Update Demo Case Field Failed: %v", m.FieldPasswordData)
@@ -202,7 +203,7 @@ func TestDemoCase(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := admin.DemoCase{}
+				m := ec_demo.DemoCase{}
 				TestDB.Order("id desc").First(&m, 1)
 				if m.FieldNumberData.NumberValidate != 20 {
 					t.Fatalf("Update Demo Case Field Failed: %v", m.FieldNumberData)
@@ -241,7 +242,7 @@ func TestDemoCase(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := admin.DemoCase{}
+				m := ec_demo.DemoCase{}
 				TestDB.Order("id desc").First(&m, 1)
 				if len(m.SelectData.AutoComplete) == 0 {
 					t.Fatalf("Update Demo Case Field Failed: %v", m.SelectData)
@@ -288,7 +289,7 @@ func TestDemoCase(t *testing.T) {
 				return req
 			},
 			EventResponseMatch: func(t *testing.T, er *TestEventResponse) {
-				m := admin.DemoCase{}
+				m := ec_demo.DemoCase{}
 				TestDB.Order("id desc").First(&m, 1)
 				if !m.CheckboxData.Checkbox {
 					t.Fatalf("Update Demo Case Field Failed: %v", m.CheckboxData)

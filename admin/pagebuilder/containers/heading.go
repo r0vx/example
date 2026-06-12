@@ -5,10 +5,10 @@ import (
 
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
+	. "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
 	"github.com/sunfmin/reflectutils"
-	. "github.com/r0vx/htmlgo"
 )
 
 // LinkDisplayOption 链接显示选项
@@ -44,7 +44,7 @@ func (*Heading) TableName() string {
 // RegisterHeadingContainer 注册标题容器
 func RegisterHeadingContainer(pb *pagebuilder.Builder) {
 	vb := pb.RegisterContainer("Heading").Group("Navigation").
-		RenderFunc(func(obj interface{}, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
+		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*Heading)
 			return HeadingBody(v, input)
 		})

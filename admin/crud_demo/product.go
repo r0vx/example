@@ -75,7 +75,7 @@ func ConfigProduct(b *presets.Builder, _ *gorm.DB, wb *worker.Builder, publisher
 		Params(&JobResource{})
 
 	if rmb := parametersBoxJob.GetParamsModelBuilder(); rmb != nil {
-		rmb.Editing("Name").Field("Name").Label("Name").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		rmb.Editing("Name").Field("Name").Label("Name").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			if obj == nil {
 				obj = &JobResource{}
 			}
@@ -140,10 +140,10 @@ func ConfigProduct(b *presets.Builder, _ *gorm.DB, wb *worker.Builder, publisher
 	).Description("This test demo is used to show how to get the action's arguments and original page context").
 		Params(&struct{ Name string }{}).
 		DisplayLog(true).
-		ContextHandler(func(ctx *web.EventContext) map[string]interface{} {
+		ContextHandler(func(ctx *web.EventContext) map[string]any {
 			auth, err := ctx.R.Cookie("auth")
 			if err == nil {
-				return map[string]interface{}{"AuthInfo": auth.Value}
+				return map[string]any{"AuthInfo": auth.Value}
 			}
 			return nil
 		})
@@ -166,7 +166,7 @@ func ConfigProduct(b *presets.Builder, _ *gorm.DB, wb *worker.Builder, publisher
 		Label("Get Args").
 		OnClickFunc(func(ctx *web.EventContext) string { return getArgsJob.URL() })
 
-	eb.ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	eb.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		u := obj.(*models.Product)
 		if u.Code == "" {
 			err.FieldError("Code", "Code is required")

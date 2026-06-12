@@ -29,7 +29,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 	rmb := lb.RowMenu().InlineDefaultsInMenu(true)
 
 	// test
-	rmb.RowMenuItem("readmeDoc").ComponentFunc(func(obj interface{}, id string, ctx *web.EventContext) h.HTMLComponent {
+	rmb.RowMenuItem("readmeDoc").ComponentFunc(func(obj any, id string, ctx *web.EventContext) h.HTMLComponent {
 		cu := obj.(*models.User)
 
 		return shadcn.RowMenuItem("test").SetOnclick(
@@ -39,7 +39,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 
 	})
 
-	lb.Field("Roles").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	lb.Field("Roles").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		user := obj.(*models.User)
 		roles := user.GetRoles()
 		badges := make([]h.HTMLComponent, 0, len(roles))
@@ -49,7 +49,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 		return h.Div(badges...).Class("flex gap-1 flex-wrap")
 	})
 
-	lb.Field("UpdatedAt").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	lb.Field("UpdatedAt").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		user := obj.(*models.User)
 		v := user.UpdatedAt.Local().Format("2006-01-02 15:04:05")
 		return h.Text(v)
@@ -82,7 +82,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 			Title: "Basic Info",
 			Rows:  [][]string{{"Name", "Company"}, {"Status", "Account"}, {"RegistrationDate"}, {"Roles"}},
 		},
-	).ValidateFunc(func(obj interface{}, ctx *web.EventContext) (err web.ValidationErrors) {
+	).ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
 		u := obj.(*models.User)
 		if u.Name == "" {
 			err.FieldError("Name", "Name is required")
@@ -94,7 +94,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 	})
 
 	eb := mb.Editing()
-	eb.Field("Roles").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	eb.Field("Roles").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		user := obj.(*models.User)
 		roleItems := make([]shadcn.DefaultOptionItem, 0)
 		for _, r := range models.DefaultRoles {
@@ -114,7 +114,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 		},
 	).Drawer(true)
 
-	dp.Field("Roles").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	dp.Field("Roles").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		user := obj.(*models.User)
 		roles := user.GetRoles()
 		badges := make([]h.HTMLComponent, 0, len(roles))
@@ -135,7 +135,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 
 // ConfigureFavorPostSelectDialog 配置收藏文章选择对话框
 func ConfigureFavorPostSelectDialog(db *gorm.DB, mb *presets.ModelBuilder, publisher *publish.Builder) {
-	mb.Editing().Field("FavorPostID").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	mb.Editing().Field("FavorPostID").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		user := obj.(*models.User)
 		var postTitle string
 		if user.FavorPostID > 0 {

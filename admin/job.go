@@ -8,9 +8,9 @@ import (
 
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/admin/worker"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // addJobs 添加后台任务
@@ -51,7 +51,7 @@ func addJobs(w *worker.Builder) {
 			job.AddLog(fmt.Sprintf("Context %#+v", jobInfo.Context))
 			return nil
 		})
-	ajb.GetResourceBuilder().Editing().Field("F1").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	ajb.GetResourceBuilder().Editing().Field("F1").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		var vErr web.ValidationErrors
 		if ve, ok := ctx.Flash.(*web.ValidationErrors); ok {
 			vErr = *ve
@@ -60,7 +60,7 @@ func addJobs(w *worker.Builder) {
 			Attr(web.VField(field.Name, field.Value(obj))...).
 			Label(field.Label).
 			ErrorMessages(vErr.GetFieldErrors(field.Name)...)
-	}).SetterFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) (err error) {
+	}).SetterFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) (err error) {
 		v := ctx.R.FormValue("F1")
 		obj.(*ArgJobResource).F1 = v
 

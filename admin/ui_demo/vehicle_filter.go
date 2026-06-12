@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/r0vx/admin/presets"
-	shadcn "github.com/r0vx/x/ui/shadcn"
-	"github.com/r0vx/web"
 	h "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
+	shadcn "github.com/r0vx/x/ui/shadcn"
 	"gorm.io/gorm"
 )
 
@@ -43,22 +43,22 @@ func ConfigVehicleFilterDemo(b *presets.Builder, db *gorm.DB) {
 	listing.PerPage(20)
 
 	// 品牌 — ID 转中文名
-	listing.Field("Brand").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	listing.Field("Brand").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		d := obj.(*models.VehicleFilterDemo)
 		return h.Text(brandNames[d.Brand])
 	})
 	// 厂商 — ID 转中文名
-	listing.Field("Maker").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	listing.Field("Maker").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		d := obj.(*models.VehicleFilterDemo)
 		return h.Text(makerNames[d.Maker])
 	})
 	// 车系 — ID 转中文名
-	listing.Field("Series").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	listing.Field("Series").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		d := obj.(*models.VehicleFilterDemo)
 		return h.Text(seriesNames[d.Series])
 	})
 	// 价格格式化
-	listing.Field("Price").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+	listing.Field("Price").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		d := obj.(*models.VehicleFilterDemo)
 		return h.Text(fmt.Sprintf("¥%.2f", d.Price))
 	})
@@ -121,17 +121,17 @@ func seedVehicleFilterDemoData(db *gorm.DB) {
 	}
 
 	demos := []models.VehicleFilterDemo{
-		{Title: "前刹车片", Brand: "1", Maker: "1", Series: "1", Price: 580},       // 宝马/华晨宝马/3系
-		{Title: "空气滤芯", Brand: "1", Maker: "1", Series: "2", Price: 120},       // 宝马/华晨宝马/5系
-		{Title: "后减震器", Brand: "1", Maker: "1", Series: "3", Price: 1200},      // 宝马/华晨宝马/X3
-		{Title: "机油滤清器", Brand: "1", Maker: "2", Series: "5", Price: 95},      // 宝马/进口宝马/7系
-		{Title: "前大灯总成", Brand: "1", Maker: "2", Series: "4", Price: 3500},    // 宝马/进口宝马/X5
+		{Title: "前刹车片", Brand: "1", Maker: "1", Series: "1", Price: 580},     // 宝马/华晨宝马/3系
+		{Title: "空气滤芯", Brand: "1", Maker: "1", Series: "2", Price: 120},     // 宝马/华晨宝马/5系
+		{Title: "后减震器", Brand: "1", Maker: "1", Series: "3", Price: 1200},    // 宝马/华晨宝马/X3
+		{Title: "机油滤清器", Brand: "1", Maker: "2", Series: "5", Price: 95},     // 宝马/进口宝马/7系
+		{Title: "前大灯总成", Brand: "1", Maker: "2", Series: "4", Price: 3500},   // 宝马/进口宝马/X5
 		{Title: "进口3系刹车盘", Brand: "1", Maker: "2", Series: "1", Price: 880},  // 宝马/进口宝马/3系
-		{Title: "雨刮片", Brand: "2", Maker: "3", Series: "6", Price: 280},         // 奔驰/进口奔驰/S级
-		{Title: "空调滤芯", Brand: "2", Maker: "3", Series: "7", Price: 150},       // 奔驰/进口奔驰/GLE
+		{Title: "雨刮片", Brand: "2", Maker: "3", Series: "6", Price: 280},      // 奔驰/进口奔驰/S级
+		{Title: "空调滤芯", Brand: "2", Maker: "3", Series: "7", Price: 150},     // 奔驰/进口奔驰/GLE
 		{Title: "火花塞（4支装）", Brand: "2", Maker: "4", Series: "9", Price: 320}, // 奔驰/北京奔驰/C级
-		{Title: "后视镜片", Brand: "2", Maker: "4", Series: "10", Price: 180},      // 奔驰/北京奔驰/E级
-		{Title: "刹车盘", Brand: "2", Maker: "4", Series: "11", Price: 760},        // 奔驰/北京奔驰/GLC
+		{Title: "后视镜片", Brand: "2", Maker: "4", Series: "10", Price: 180},    // 奔驰/北京奔驰/E级
+		{Title: "刹车盘", Brand: "2", Maker: "4", Series: "11", Price: 760},     // 奔驰/北京奔驰/GLC
 	}
 	db.Create(&demos)
 }

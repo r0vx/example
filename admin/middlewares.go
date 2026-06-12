@@ -3,7 +3,7 @@ package admin
 import (
 	"net/http"
 
-	"github.com/r0vx/admin/role"
+	"github.com/r0vx/x/perm"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +22,7 @@ func withRoles(db *gorm.DB) func(next http.Handler) http.Handler {
 				return
 			}
 			if len(roleIDs) > 0 {
-				var roles []role.Role
+				var roles []perm.Role
 				if err := db.Where("id in (?)", roleIDs).Find(&roles).Error; err != nil {
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 					return

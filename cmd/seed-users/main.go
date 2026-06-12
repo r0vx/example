@@ -45,7 +45,7 @@ func main() {
 	fmt.Println("开始插入 1000 条用户数据...")
 
 	users := make([]models.User, 1000)
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		name := randomName()
 		email := fmt.Sprintf("user%d@test.com", i+1)
 		users[i] = models.User{

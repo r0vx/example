@@ -3,8 +3,8 @@ package containers
 import (
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
-	"github.com/r0vx/web"
 	. "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
 )
 
 // ImageContainer 图片容器模型
@@ -27,16 +27,16 @@ func (*ImageContainer) TableName() string {
 // RegisterImageContainer 注册图片容器
 func RegisterImageContainer(pb *pagebuilder.Builder) {
 	vb := pb.RegisterContainer("Image").Group("Content").
-		RenderFunc(func(obj interface{}, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
+		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*ImageContainer)
 			return ImageContainerBody(v, input)
 		})
 	vb.Model(&ImageContainer{}).Editing("AddTopSpace", "AddBottomSpace", "AnchorID", "BackgroundColor", "TransitionBackgroundColor", "ImageURL", "ImageAlt")
 	vb.ConfigureEditing(func(eb *presets.EditingBuilder) {
-		eb.Field("BackgroundColor").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) HTMLComponent {
+		eb.Field("BackgroundColor").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) HTMLComponent {
 			return presets.SelectField(obj, field, ctx).Items(StringsToOptions(BackgroundColors))
 		})
-		eb.Field("TransitionBackgroundColor").ComponentFunc(func(obj interface{}, field *presets.FieldContext, ctx *web.EventContext) HTMLComponent {
+		eb.Field("TransitionBackgroundColor").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) HTMLComponent {
 			return presets.SelectField(obj, field, ctx).Items(StringsToOptions(BackgroundColors))
 		})
 	})
