@@ -224,8 +224,8 @@ github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 h1:o4JXh1EVt
 github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55/go.mod h1:OmDBASR4679mdNQnz2pUhc2G8CO2JrUAVFDRBDP/hJE=
 github.com/pquerna/otp v1.5.0 h1:NMMR+WrmaqXU4EzdGJEE1aUUI0AMRzsp96fFFWNPwxs=
 github.com/pquerna/otp v1.5.0/go.mod h1:dkJfzwRKNiegxyNb54X/3fLwhCynbMspSyWKnvi1AEg=
-github.com/r0vx/admin v0.3.0 h1:1fv+cV6nyQge4b5JX1ssN6Bv/8KI8fwU3wm3/5V7fMM=
-github.com/r0vx/admin v0.3.0/go.mod h1:B47eEFlm/yULn4cHKwS467ZfkaFUIhE3xHhCPMv+GwU=
+github.com/r0vx/admin v0.3.1 h1:DCOswfrFMDN+BRMgK0YlPdFbt9tRUCb3l913blslzzc=
+github.com/r0vx/admin v0.3.1/go.mod h1:B47eEFlm/yULn4cHKwS467ZfkaFUIhE3xHhCPMv+GwU=
 github.com/r0vx/htmlgo v0.3.1 h1:zQ3RnLEamj3GSyhCokJfptsMT0ocsgUT9fPj/nB4e48=
 github.com/r0vx/htmlgo v0.3.1/go.mod h1:q1DJffbWTgnskuxOExIQYKivW6auqF9ozu4A6r+0OBU=
 github.com/r0vx/imaging v0.1.1 h1:EN3ZAcyKe0osDGmjlVahNbwIUNrOymPp3xR1AoXOuRk=
