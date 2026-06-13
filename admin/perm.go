@@ -1,13 +1,10 @@
 package admin
 
 import (
-	"fmt"
 	"net/http"
 
 	"example/models"
 
-	"github.com/ory/ladon"
-	"github.com/r0vx/admin/activity"
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/x/perm"
 	"gorm.io/gorm"
@@ -38,32 +35,12 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 			// 注意资源名是 SnakeOn 后的形式：字段 Switch1 → f_switch_1（数字前带下划线），不是 f_switch1。
 			// 如需连编辑表单的 Switch1 也禁用，用更宽的 "*:f_switch_1:*"（表单路径经 ObjectOn 多一段记录 id）。
 			perm.PolicyFor(perm.Anybody).WhoAre(perm.Denied).ToDo(presets.PermUpdate).On("*:input_demos:f_switch_1:*"),
-
-			perm.PolicyFor(models.RoleManager).WhoAre(perm.Denied).ToDo(perm.Anything).
-				On("*:activity_logs").On("*:activity_logs:*").
-				Given(perm.Conditions{
-					"is_authorized": &ladon.BooleanCondition{},
-				}),
 		).SubjectsFunc(func(r *http.Request) []string {
 			u := getCurrentUser(r)
 			if u == nil {
 				return nil
 			}
 			return u.GetRoles()
-		}).ContextFunc(func(r *http.Request, objs []any) perm.Context {
-			c := make(perm.Context)
-			for _, obj := range objs {
-				switch v := obj.(type) {
-				case *activity.ActivityLog:
-					u := getCurrentUser(r)
-					if fmt.Sprint(u.GetID()) == v.UserID {
-						c["is_authorized"] = true
-					} else {
-						c["is_authorized"] = false
-					}
-				}
-			}
-			return c
 		}).DBPolicy(perm.NewDBPolicy(db)),
 	)
 }

@@ -152,27 +152,6 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 			Avatar: "",
 		}, nil
 	}).
-		WrapLogModelInstall(func(in presets.ModelInstallFunc) presets.ModelInstallFunc {
-			return func(pb *presets.Builder, mb *presets.ModelBuilder) (err error) {
-				err = in(pb, mb)
-				if err != nil {
-					return
-				}
-				mb.Listing().WrapSearchFunc(func(in presets.SearchFunc) presets.SearchFunc {
-					return func(ctx *web.EventContext, params *presets.SearchParams) (result *presets.SearchResult, err error) {
-						u := getCurrentUser(ctx.R)
-						if rs := u.GetRoles(); !slices.Contains(rs, models.RoleAdmin) {
-							params.SQLConditions = append(params.SQLConditions, &presets.SQLCondition{
-								Query: "user_id = ?",
-								Args:  []interface{}{fmt.Sprint(u.ID)},
-							})
-						}
-						return in(ctx, params)
-					}
-				})
-				return
-			}
-		}).
 		TablePrefix("cms_").
 		AutoMigrate()
 
@@ -196,6 +175,15 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	// 	PublishStorage = options.StorageWrapper(PublishStorage)
 	// }
 	b := presets.New().DataOperator(gorm2op.DataOperator(db))
+	// 数据隔离全局 resolver：非 admin 只看自己的数据，admin 看全部。
+	// ownerValue 用 string（匹配 activity.ActivityLog.UserID 的 string 列）。
+	b.DataScopeResolver(func(ctx *web.EventContext) (any, bool) {
+		u := getCurrentUser(ctx.R)
+		if u == nil {
+			return nil, false
+		}
+		return fmt.Sprint(u.GetID()), slices.Contains(u.GetRoles(), models.RoleAdmin)
+	})
 	defer b.Build()
 
 	// 添加 shadcn-vue 组件资源
