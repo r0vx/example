@@ -663,13 +663,14 @@ func configProfile(db *gorm.DB, ab *activity.Builder, lsb *plogin.SessionBuilder
 				Roles:  u.GetRoles(),
 				Status: strcase.ToCamel(u.Status),
 				Fields: []*plogin.ProfileField{
-					{Name: "Email", Value: u.Account, Icon: "mail"},
-					{Name: "Company", Value: u.Company, Icon: "building"},
+					{Name: "Email", Key: "email", Value: u.Account, Icon: "mail", Editable: true},
+					{Name: "Company", Key: "company", Value: u.Company, Icon: "building", Editable: true},
 				},
 				NotifCounts: notifiCounts,
 			}
-			if u.OAuthAvatar != "" {
-				user.Avatar = u.OAuthAvatar
+			user.Avatar = u.Avatar
+			if user.Avatar == "" && u.OAuthAvatar != "" {
+				user.Avatar = u.OAuthAvatar // 回退到 OAuth 头像
 			}
 			return user, nil
 		},
@@ -685,7 +686,31 @@ func configProfile(db *gorm.DB, ab *activity.Builder, lsb *plogin.SessionBuilder
 			}
 			return nil
 		},
-	).SessionBuilder(lsb) // .DisableNotification(true).LogoutURL(lsb.GetLoginBuilder().LogoutURL)
+	).SessionBuilder(lsb).
+		AvatarUpload(ui_demo.AvatarUploadPath).
+		UpdateProfileFunc(func(ctx context.Context, changes map[string]string) error {
+			evCtx := web.MustGetEventContext(ctx)
+			u := getCurrentUser(evCtx.R)
+			if u == nil {
+				return perm.PermissionDenied
+			}
+			if v, ok := changes["name"]; ok {
+				u.Name = v
+			}
+			if v, ok := changes["email"]; ok {
+				u.Account = v // 注意：Account 即登录邮箱，改动需保证唯一
+			}
+			if v, ok := changes["company"]; ok {
+				u.Company = v
+			}
+			if v, ok := changes["avatar"]; ok {
+				u.Avatar = v
+			}
+			if err := db.Save(u).Error; err != nil {
+				return errors.Wrap(err, "failed to update profile")
+			}
+			return nil
+		}) // .DisableNotification(true).LogoutURL(lsb.GetLoginBuilder().LogoutURL)
 	// 		CustomizeButtons(func(ctx context.Context, buttons ...h.HTMLComponent) ([]h.HTMLComponent, error) {
 	// 	evCtx := web.MustGetEventContext(ctx)
 	// 	u := getCurrentUser(evCtx.R)

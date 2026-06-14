@@ -40,6 +40,7 @@ type User struct {
 
 	Name             string
 	Company          string
+	Avatar           string // 持久化头像 URL（OAuthAvatar 是 gorm:"-" 瞬态，不入库，故单列存）
 	Roles            []perm.Role `gorm:"many2many:user_role_join;"`
 	Status           string
 	UpdatedAt        time.Time
