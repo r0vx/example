@@ -19,6 +19,13 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 			// 注意：seo 编辑权限闸 editIsAllowed 接线后（移植回归修复），启用 perm 的项目
 			// 必须有能匹配 `:seo:seo_settings:` + `perm_seo_edit` 的 allow 策略，否则 SEO 不可编辑。
 			perm.PolicyFor(models.RoleAdmin).WhoAre(perm.Allowed).ToDo(perm.Anything).On(perm.Anything),
+			// 功能角色 demo（同角色不同用户、不同权限）：在 Editor 等「基础角色」之上，给用户附加
+			// ProductManager / UserManager 这种「功能角色」按模块细分能力。subject 字符串须与角色 Name 一致
+			//（User.GetRoles() 返回 role.Name）。用户 A=[Editor,ProductManager]→能管产品；B=[Editor,UserManager]→能管用户。
+			// ⚠️ 多角色是权限并集（OR）：要互斥，须保证基础角色 Editor 不含 products/users 管理权，否则会从 Editor 漏出。
+			// ⚠️ 要让此 demo 可验证：还需在 roles 后台（或 models.DefaultRoles）建同名角色并分配给测试用户。
+			perm.PolicyFor("ProductManager").WhoAre(perm.Allowed).ToDo(perm.Anything).On("*:products:*"),
+			perm.PolicyFor("UserManager").WhoAre(perm.Allowed).ToDo(perm.Anything).On("*:users:*"),
 			perm.PolicyFor(perm.Anybody).WhoAre(perm.Denied).ToDo(presets.PermCreate).On("*:orders:*"),
 			perm.PolicyFor(
 				models.RoleViewer,
@@ -28,6 +35,28 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermCreate, presets.PermUpdate, presets.PermDelete).On(perm.Anything),
 			// Filter 项权限控制示例：Viewer 角色看不到用户列表的 name 筛选器
 			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermList).On("*:users:fl_name:*"),
+			// RowMenuItem 权限控制示例（fm_，与筛选项 fl_ 同构）：Viewer 角色看不到、也无法操作
+			// action-enhance-demo 列表的「设置费率」行操作按钮（资源 fm_set_user_poundage、action presets:list）。
+			// 隐藏按钮 + 服务端拒绝事件（防绕过 UI）；日志 Resource:"*:action_enhance_demo:fm_set_user_poundage:"。
+			perm.PolicyFor(models.RoleAdmin).WhoAre(perm.Denied).ToDo(presets.PermList).On("*:action_enhance_demo:fm_set_user_poundage:*"),
+
+			perm.PolicyFor(models.RoleAdmin).WhoAre(perm.Denied).ToDo(presets.PermUpdate).On("*:action_enhance_demo:fm_set_user_poundage:*"),
+
+			// Action / BulkAction 权限控制示例（action 维度，走 SnakeDo；与 fm_/fl_ 的 resource 维度正交）：
+			// Viewer 看不到也无法执行 action-enhance-demo 列表的「刷新」行动作与「批量归档」批量操作。
+			// action 串 = presets:<category>:<snake(name)>，resource 为模型级 *:action_enhance_demo:*（无额外段）。
+			//   Action("Refresh")        → presets:do_listing_action:refresh
+			//   BulkAction("BulkArchive")→ presets:bulk_actions:bulk_archive
+			// 双层拦截：渲染隐藏按钮（listing_compo.go:1571 action / :1544 bulk）+ 执行拒绝（:1959 / :1819）。
+			// 开 perm.Verbose 时日志里 Action:"presets:do_listing_action:refresh" 可直接看到真实串。
+			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo("presets:do_listing_action:refresh").On("*:action_enhance_demo:*"),
+			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo("presets:bulk_actions:bulk_archive").On("*:action_enhance_demo:*"),
+
+			// FilterTab 权限控制示例（ft_，与筛选项 fl_ 同构）：Viewer 看不到 input-demos 列表的「启用」筛选标签。
+			// 资源 *:input_demos:ft_enabled:*、action presets:list；框架渲染时自动剔除无权限 tab
+			//（listing_compo.go 的 compactTabsFilter），无需在 FilterTabsFunc 里写 if。tab 须显式给 ID（这里 "enabled"）。
+			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermList).On("*:input_demos:ft_enabled:*"),
+
 			// OptionsFunc 按用户 ID 过滤示例：Viewer 角色在订单 Source 筛选器中看不到 ID=1007 的用户
 			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermList).On(":presets:users:users:1001:"),
 			// 字段权限示例：所有人对 input_demos 的 Switch1 字段 PermUpdate 只读 →

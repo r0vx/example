@@ -95,10 +95,14 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 	cl.FilterTabsFunc(func(ctx *web.EventContext) []*presets.FilterTab {
 		return []*presets.FilterTab{
 			{
+				ID:    "all",
 				Label: "全部",
 				Query: url.Values{"all": []string{""}},
 			},
 			{
+				// ft_ 权限 demo：给 tab 显式 ID 后，即可在 admin/perm.go 用 *:input_demos:ft_enabled:*
+				// 控制其可见性（与 fl_/fm_ 同构，框架自动剔除无权限 tab，无需在本 func 里写 if）。
+				ID:    "enabled",
 				Label: "启用",
 				Query: url.Values{"enabled": []string{"true"}},
 			},
@@ -444,14 +448,17 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 	ed.Field("CodeMirror1").
 		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 			val, _ := field.Value(obj).(string)
+			// 临时换行验证：空值时用一段含超长无空格 query 串的 HTTP 报文作默认，测试软换行
+			if val == "" {
+				val = "# ERROR\nPost \"https://www.myshop2.com/v3/pay/UnifiedOrder\": tls: failed to verify certificate: x509: certificate has expired or is not yet valid\n\nPOST /v3/pay/UnifiedOrder HTTP/1.1\nHost: www.myshop2.com\nContent-Type: application/x-www-form-urlencoded\n\namount=1000&code=8888&mchOrderNo=TEST1178124797807448400&mchid=10000&notifyUrl=http%3A%2F%2Fwww.myshop2.com%2Fv3%2Fpay%2Fnotify%2FTEST1178&sign=C2FF991CC869F1F5FAA48A8443A0BFC6"
+			}
 			return codemirror.CodeMirror().
 				Label(field.Label).
 				ModelValue(val).
-				Language(codemirror.LangJSON).
-				Theme(codemirror.ThemeLight).
-				Height("200px").
-				Placeholder("请输入 JSON 代码...").
-				ShowFormat(true). // 显示格式化按钮
+				Language(codemirror.LangText).
+				Theme(codemirror.ThemeDark).
+				Height("300px").
+				Placeholder("请输入...").
 				Attr(web.VField(field.Name, val)...).
 				ErrorMessages(field.Errors...)
 		})

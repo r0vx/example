@@ -27,6 +27,21 @@ var formData = &myFormValue{
 	Feature1:      true,
 }
 
+// radioCardSizeRow 生成一行指定尺寸的 Choice Card 对照（左侧标尺寸名，右侧三张卡）
+func radioCardSizeRow(sizeLabel string, size RadioCardSize, model string) h.HTMLComponent {
+	return h.Div(
+		h.Div(h.Text(sizeLabel)).Class("w-12 shrink-0 pt-3 text-sm font-medium text-muted-foreground"),
+		RadioGroup(
+			RadioCard().Value("starter").Title("Starter").
+				Description("适合个人项目，免费").Icon("rocket").Size(size),
+			RadioCard().Value("pro").Title("Pro").
+				Description("$20/月，团队协作").Icon("zap").Size(size),
+			RadioCard().Value("enterprise").Title("Enterprise").
+				Description("定制方案与专属支持").Icon("building-2").Size(size),
+		).Attr("v-model", model).Class("grid flex-1 gap-3 sm:grid-cols-3"),
+	).Class("flex items-start gap-4")
+}
+
 // ShadcnBasicInputsDemo 虚拟模型
 type ShadcnBasicInputsDemo struct{}
 
@@ -140,6 +155,16 @@ func shadcnBasicInputsBody(ctx *web.EventContext) h.HTMLComponent {
 							Description("定制方案与专属支持").Icon("building-2").Disabled(true),
 					).Attr("v-model", "form.Plan").Class("grid gap-3 sm:grid-cols-3"),
 				).Class("demo-row"),
+			).Class("demo-section"),
+
+			// RadioGroup - Choice Card 三种尺寸对照（sm / md / lg）
+			h.Div(
+				h.H2("RadioGroup (Choice Card — Sizes)"),
+				h.Div(
+					radioCardSizeRow("sm", RadioCardSizeSm, "form.PlanSm"),
+					radioCardSizeRow("md", RadioCardSizeMd, "form.PlanMd"),
+					radioCardSizeRow("lg", RadioCardSizeLg, "form.PlanLg"),
+				).Class("demo-row flex flex-col gap-4"),
 			).Class("demo-section"),
 
 			// Checkbox - 使用内置 Label + Tips

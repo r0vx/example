@@ -292,40 +292,11 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 			{Text: "Delete", Value: presets.PermDelete},
 			{Text: "HelpCenterAIGen", Value: helpcenter.PermHelpCenterGen},
 		}).
-		Resources([]*shadcn.DefaultOptionItem{
-			{Text: "All", Value: "*"},
-			// User Management
-			{Text: "Users", Value: "*:users:*"},
-			{Text: "Roles", Value: "*:roles:*"},
-			// EC Management
-			{Text: "Products", Value: "*:products:*,*:product_management:"},
-			{Text: "Categories", Value: "*:categories:*,*:product_management:"},
-			{Text: "Orders", Value: "*:orders:*"},
-			{Text: "Customers", Value: "*:customers:*"},
-			// Content
-			{Text: "Posts", Value: "*:posts:*"},
-			{Text: "ListModels", Value: "*:list_models:*"},
-			{Text: "Media", Value: "*:media_libraries:*"},
-			{Text: "MicrositeModels", Value: "*:microsite_models:*"},
-			// Localization
-			{Text: "L10nModels", Value: "*:l10n_models:*"},
-			{Text: "L10nModelWithVersions", Value: "*:l10n_model_with_versions:*"},
-			// System
-			{Text: "Settings", Value: "*:settings:*,*:site_management:"},
-			{Text: "SEO", Value: "*:seo_settings:*,*:site_management:"},
-			{Text: "ActivityLogs", Value: "*:activity_logs:*"},
-			{Text: "Workers", Value: "*:workers:*"},
-			{Text: "Redirections", Value: "*:redirections:*"},
-			// Projects
-			{Text: "Projects", Value: "*:projects:*"},
-			{Text: "Tasks", Value: "*:tasks:*"},
-			// Demo
-			{Text: "InputDemos", Value: "*:input_demos:*"},
-			{Text: "DemoCases", Value: "*:demo_cases:*"},
-			{Text: "NestedFieldDemos", Value: "*:nested-field-demos:*"},
-			{Text: "ShadcnDemo", Value: "*:shadcn-*:*"},
-			{Text: "ECDashboard", Value: "*:ec-dashboard:*"},
-		}).
+		// Resources 选项改由框架自动枚举（admin v0.4.0：AutoEnumerate 默认开）——
+		// 遍历所有注册模型 + 细粒度闸（f_/fl_/fm_/ft_）按模型分组自动生成，免维护这一长串。
+		// （旧手维护列表里 *:nested-field-demos:* / *:shadcn-*:* 等 kebab 写法本就与运行时 snake 资源错配，
+		//  正是自动枚举要消除的隐患。）如需限定仍可显式 .Resources(...) 覆盖。
+		Matrix(true). // 只读权限矩阵总览页 /role-matrix（默认即开，此处显式标注）
 		AfterInstall(func(pb *presets.Builder, mb *presets.ModelBuilder) error {
 			mb.Listing().SearchFunc(func(ctx *web.EventContext, params *presets.SearchParams) (result *presets.SearchResult, err error) {
 				u := getCurrentUser(ctx.R)
@@ -436,6 +407,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	ui_demo.ConfigTreeListingDemo(b, db)
 	ui_demo.ConfigAvatarUploadDemo(b, db)
 	ui_demo.ConfigSiteSettingDemo(b, db) // Singleton(true) 单例配置页范例
+	ConfigDataScopeDemo(b, db)           // 数据隔离：同角色跨表不同隔离字段（agent_id/user_id/parent_id）
 
 	crud_demo.ConfigUser(b, ab, db, publisher, loginSessionBuilder)
 	b.Use(

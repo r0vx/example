@@ -36,6 +36,7 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 	// 中文显示名注册在 admin/messages.go（key WizardDemos）。
 	mb := b.Model(&models.WizardDemo{}).URIName("action-enhance-demo")
 	mb.Listing("ID", "Name", "Phone", "Status")
+	mb.Detailing("Name", "Phone", "Industry", "Address", "Status").Drawer(true)
 	mb.Editing("Name", "Phone", "Industry", "Address", "Status")
 
 	// --- 单条 Action #1: 简单图标 + tooltip + 直接执行 ---
@@ -182,6 +183,26 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 			return nil
 		})
 
+	// --- fm_ 权限演示：行菜单项「角色级权限闸」，与筛选项 fl_ 完全同构 ---
+	// 该项自动鉴权资源 *:action_enhance_demo:fm_set_user_poundage:*，action presets:list
+	//（name "SetUserPoundage" 经 SnakeOn → fm_set_user_poundage）。
+	// 在 admin/perm.go 配 deny 策略后，对应角色：① 列表/抽屉里看不到此按钮（permDenied → 隐藏）；
+	// ② 即使手拼请求直接触发事件，服务端也二次校验拒绝（防绕过 UI）。
+	// 开 perm.Verbose 时日志会打出 Resource:"...:fm_set_user_poundage:"，与 fl_ 同结构。
+	// 注意：fm_ 只管「角色能否看到/操作该按钮」；逐行业务态用 Visible/Disabled，行级数据归属用 DataScope。
+	rm.RowMenuItem("SetUserPoundage").
+		//OnlyInDrawer(true).
+		AlsoInDrawer(true).
+		Icon("percent").
+		Label("设置费率").
+		Tooltip("设置该商户费率（演示 fm_ 角色级权限闸）").
+		UpdateFunc(func(id string, ctx *web.EventContext, r *web.EventResponse) error {
+			notifier.Success(ctx, r, "已设置商户 #"+id+" 费率")
+			presets.ShowSuccess(r, "设置费率")
+			//r.Reload = true
+			return nil
+		})
+
 	// OnlyInDrawer 演示：只在编辑/详情抽屉顶部出现，列表行 ⋮ 菜单里不显示
 	rm.RowMenuItem("ViewDetail").
 		OnlyInDrawer(true).
@@ -195,9 +216,45 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 	// --- OnEvent 演示：行菜单项「声明式」触发自定义事件（非内置 UpdateFunc）---
 	// 按钮外观仍走链式（Icon/Label/Tooltip），点击触发下面注册的 eventBalance，自动带当前行 id。
 	// 与顶部「预存」按钮复用同一事件 → 逻辑只写一处。需额外参数时链式 .EventQuery("k","v")。
-	rm.RowMenuItem("Balance").
+	rm.RowMenuItem("Balance").OnlyInDrawer(true).
 		Icon("wallet").
-		Label("预存").
+		Label("预存金额").
+		Tooltip("给该商户预存金额").
+		OnEvent("eventBalance")
+
+	rm.RowMenuItem("Balance2").OnlyInDrawer(true).
+		Icon("wallet").
+		Label("预存金额").
+		Tooltip("给该商户预存金额").
+		OnEvent("eventBalance")
+
+	rm.RowMenuItem("Balance3").OnlyInDrawer(true).
+		Icon("wallet").
+		Label("预存金额").
+		Tooltip("给该商户预存金额").
+		OnEvent("eventBalance")
+
+	rm.RowMenuItem("Balance4").OnlyInDrawer(true).
+		Icon("wallet").
+		Label("预存金额").
+		Tooltip("给该商户预存金额").
+		OnEvent("eventBalance")
+
+	rm.RowMenuItem("Balance5").OnlyInDrawer(true).
+		Icon("wallet").
+		Label("预存金额").
+		Tooltip("给该商户预存金额").
+		OnEvent("eventBalance")
+
+	rm.RowMenuItem("Balance6").OnlyInDrawer(true).
+		Icon("wallet").
+		Label("预存金额").
+		Tooltip("给该商户预存金额").
+		OnEvent("eventBalance")
+
+	rm.RowMenuItem("Balance8").OnlyInDrawer(true).
+		Icon("wallet").
+		Label("预存金额").
 		Tooltip("给该商户预存金额").
 		OnEvent("eventBalance")
 
