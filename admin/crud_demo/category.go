@@ -30,6 +30,17 @@ func ConfigCategory(b *presets.Builder, db *gorm.DB, publisher *publish.Builder)
 	return mb
 }
 
+// ConfigSubCategory 演示现有 SortBuilder：列表工具栏「Sort」按钮 → 独立排序页 → 拖动改 Position
+func ConfigSubCategory(b *presets.Builder, db *gorm.DB) *presets.ModelBuilder {
+	mb := b.Model(&models.SubCategory{}).URIName("sub-categories").Label("二级分类（排序演示）")
+	mb.Listing("ID", "Name", "Position").SearchColumns("name").SelectableColumns(true)
+	mb.Editing("Name", "Position")
+	// 启用拖拽排序：工具栏图标按钮，点击弹排序 Dialog，保存后按新顺序写回 Position。
+	// 不设 Label → 标题/tooltip 走 i18n 默认（中文「排序」/英文 Sort）。
+	mb.Sorting(db).PositionField("Position").Display("Name").InstallToolbarButton()
+	return mb
+}
+
 // ConfigNestedFieldDemo 配置嵌套字段演示（Customer → Address → Phone / MembershipCard）
 func ConfigNestedFieldDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder) {
 	mb := b.Model(&models.Customer{}).URIName("customers")

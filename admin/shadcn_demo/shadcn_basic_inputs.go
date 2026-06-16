@@ -167,6 +167,45 @@ func shadcnBasicInputsBody(ctx *web.EventContext) h.HTMLComponent {
 				).Class("demo-row flex flex-col gap-4"),
 			).Class("demo-section"),
 
+			// ChipGroup 胶囊选择器演示：单选 + 多选 + 三尺寸 + 禁用
+			h.Div(
+				h.H2("ChipGroup 胶囊选择器"),
+				h.Div(
+					web.Scope(
+						ChipGroup().
+							Label("字段可见（单选）").
+							Items([]DefaultOptionItem{
+								{Text: "account", Value: "account"},
+								{Text: "phone", Value: "phone"},
+								{Text: "avatar", Value: "avatar"},
+							}).
+							Attr("v-model", "locals.single"),
+						ChipGroup().
+							Label("字段可见（多选）").
+							Multiple(true).
+							Items([]DefaultOptionItem{
+								{Text: "account", Value: "account"},
+								{Text: "phone", Value: "phone"},
+								{Text: "avatar", Value: "avatar"},
+							}).
+							Attr("v-model", "locals.multi").
+							Class("mt-4"),
+						ChipGroup().Label("sm").Size(ChipGroupSizeSm).
+							Items([]DefaultOptionItem{{Text: "A", Value: "a"}, {Text: "B", Value: "b"}}).
+							Attr("v-model", "locals.sz").Class("mt-4"),
+						ChipGroup().Label("md").Size(ChipGroupSizeMd).
+							Items([]DefaultOptionItem{{Text: "A", Value: "a"}, {Text: "B", Value: "b"}}).
+							Attr("v-model", "locals.sz").Class("mt-2"),
+						ChipGroup().Label("lg").Size(ChipGroupSizeLg).
+							Items([]DefaultOptionItem{{Text: "A", Value: "a"}, {Text: "B", Value: "b"}}).
+							Attr("v-model", "locals.sz").Class("mt-2"),
+						ChipGroup().Label("禁用").Disabled(true).
+							Items([]DefaultOptionItem{{Text: "A", Value: "a"}, {Text: "B", Value: "b"}}).
+							Attr("v-model", "locals.dis").Class("mt-4"),
+					).VSlot("{ locals }").Init(`{ single: "account", multi: ["account"], sz: "a", dis: "a" }`),
+				).Class("demo-row"),
+			).Class("demo-section"),
+
 			// Checkbox - 使用内置 Label + Tips
 			h.Div(
 				h.H2("Checkbox (内置 Label)"),

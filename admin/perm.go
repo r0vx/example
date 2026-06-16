@@ -32,7 +32,11 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 				models.RoleEditor,
 				models.RoleManager,
 			).WhoAre(perm.Denied).ToDo(presets.PermCreate, presets.PermUpdate, presets.PermDelete).On("*:roles:*", "*:users:*"),
-			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermCreate, presets.PermUpdate, presets.PermDelete).On(perm.Anything),
+			// 【已注释】原本：Viewer 全局禁 增/改/删（On Anything）。这是静态兜底策略，
+			// ladon 中 Deny 恒覆盖 Allow，会盖掉 roles 后台（权限树）给 Viewer 授的任何 DB 编辑权，
+			// 导致「明明在树里设了编辑权限却仍被拒」。注释后 Viewer 的增改删完全由 DB 策略（权限树）说了算。
+			// 如需恢复「Viewer 全局只读」演示，取消下一行注释即可。
+			// perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermCreate, presets.PermUpdate, presets.PermDelete).On(perm.Anything),
 			// Filter 项权限控制示例：Viewer 角色看不到用户列表的 name 筛选器
 			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermList).On("*:users:fl_name:*"),
 			// RowMenuItem 权限控制示例（fm_，与筛选项 fl_ 同构）：Viewer 角色看不到、也无法操作
@@ -42,15 +46,16 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 
 			perm.PolicyFor(models.RoleAdmin).WhoAre(perm.Denied).ToDo(presets.PermUpdate).On("*:action_enhance_demo:fm_set_user_poundage:*"),
 
-			// Action / BulkAction 权限控制示例（action 维度，走 SnakeDo；与 fm_/fl_ 的 resource 维度正交）：
+			// Action / BulkAction 权限控制示例（fa_ 资源闸，与 fm_/fl_ 同构）：
 			// Viewer 看不到也无法执行 action-enhance-demo 列表的「刷新」行动作与「批量归档」批量操作。
-			// action 串 = presets:<category>:<snake(name)>，resource 为模型级 *:action_enhance_demo:*（无额外段）。
-			//   Action("Refresh")        → presets:do_listing_action:refresh
-			//   BulkAction("BulkArchive")→ presets:bulk_actions:bulk_archive
-			// 双层拦截：渲染隐藏按钮（listing_compo.go:1571 action / :1544 bulk）+ 执行拒绝（:1959 / :1819）。
-			// 开 perm.Verbose 时日志里 Action:"presets:do_listing_action:refresh" 可直接看到真实串。
-			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo("presets:do_listing_action:refresh").On("*:action_enhance_demo:*"),
-			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo("presets:bulk_actions:bulk_archive").On("*:action_enhance_demo:*"),
+			// 资源串格式：*:<uri>:*fa_<snake(name)>:*，action = presets:list。
+			//   Action("Refresh")        → *:action_enhance_demo:*fa_refresh:*
+			//   BulkAction("BulkArchive")→ *:action_enhance_demo:*fa_bulk_archive:*
+			// 双层拦截：渲染隐藏按钮（listing_compo.go actionsComponent / floatingBulkBar）
+			//           + 执行拒绝（fetchAction / fetchBulkAction）。
+			// 开 perm.Verbose 时日志里 Resource:"*:action_enhance_demo:*fa_refresh:*" 可直接看到真实串。
+			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermList).On("*:action_enhance_demo:*fa_refresh:*"),
+			perm.PolicyFor(models.RoleViewer).WhoAre(perm.Denied).ToDo(presets.PermList).On("*:action_enhance_demo:*fa_bulk_archive:*"),
 
 			// FilterTab 权限控制示例（ft_，与筛选项 fl_ 同构）：Viewer 看不到 input-demos 列表的「启用」筛选标签。
 			// 资源 *:input_demos:ft_enabled:*、action presets:list；框架渲染时自动剔除无权限 tab

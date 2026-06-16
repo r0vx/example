@@ -55,7 +55,7 @@ func ConfigHelpCenter(b *presets.Builder, db *gorm.DB, publisher *publish.Builde
 
 	hc := helpcenter.New(db, publisher).
 		PublicPrefix("/help").
-		AdminMenu("帮助中心").
+		AdminMenu("帮助文档").
 		AIEndpoint("/help-ai").
 		// AI 端点鉴权：复用 example 的 getCurrentUser（登录中间件已填充请求上下文）
 		AICheckAuth(func(r *http.Request) bool { return login.GetCurrentUser(r).(*models.User) != nil }).

@@ -63,6 +63,19 @@ func shadcnFilterBody(ctx *web.EventContext) h.HTMLComponent {
 						{Text: "Popular", Value: "popular"},
 					}),
 
+					// Chip 单选筛选
+					ChipFilterItem("chip_status", "状态(Chip单选)", []FilterSelectOption{
+						{Text: "启用", Value: "active"},
+						{Text: "停用", Value: "inactive"},
+					}),
+
+					// Chip 多选筛选
+					ChipMultipleFilterItem("chip_tags", "标签(Chip多选)", []FilterSelectOption{
+						{Text: "VIP", Value: "vip"},
+						{Text: "新客", Value: "new"},
+						{Text: "高风险", Value: "risk"},
+					}),
+
 					// 自动完成筛选
 					AutoCompleteFilterItem("category", "Category", []FilterSelectOption{
 						{Text: "Electronics", Value: "electronics"},

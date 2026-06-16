@@ -319,6 +319,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 		b.Use(w.Activity(ab))
 	}
 	categoryMB := crud_demo.ConfigCategory(b, db, publisher)
+	crud_demo.ConfigSubCategory(b, db) // 演示现有拖拽排序 SortBuilder
 
 	// 给「分类」列表页挂上 ✨ AI 教程 生成按钮（权限 helpcenter:ai-gen 控制）
 	if helpCenterBuilder != nil {

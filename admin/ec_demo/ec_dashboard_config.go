@@ -21,7 +21,17 @@ func ConfigECDashboard(pb *presets.Builder, db *gorm.DB) {
 
 	lb := b.Listing()
 
+	// 声明自定义权限资源（fc_ 闸）：dashboard 各区块可在 role 权限树「自定义资源」分区独立授权/拒绝。
+	// 执行端在 PageFunc 内用 canSee 校验，无权区块直接不渲染。
+	lb.PermResource("stat_cards", "统计卡片")
+	lb.PermResource("visitor_chart", "访问量图表")
+	lb.PermResource("order_status_chart", "订单状态分布")
+
 	lb.PageFunc(func(ctx *web.EventContext) (r web.PageResponse, err error) {
+		// canSee 校验当前用户对某自定义资源（fc_<key>）是否有 PermList 权限；越权返回 false → 不渲染该区块。
+		canSee := func(key string) bool {
+			return b.Info().Verifier().Do(presets.PermList).SnakeOn("fc_"+key).WithReq(ctx.R).IsAllowed() == nil
+		}
 		// DB query
 		var productCount int64
 		var orderCount int64
@@ -99,9 +109,11 @@ func ConfigECDashboard(pb *presets.Builder, db *gorm.DB) {
 			"mobile":  {Label: "Mobile", Color: "var(--chart-1)"},
 		}
 
-		body := h.Div(
-			// 统计卡片
-			h.Div(
+		var sections []h.HTMLComponent
+
+		// 统计卡片（fc_stat_cards）：无权则整块不渲染
+		if canSee("stat_cards") {
+			sections = append(sections, h.Div(
 				shadcn.Card(
 					shadcn.CardHeader(
 						shadcn.CardTitle(h.Text(strconv.Itoa(int(productCount)))),
@@ -114,10 +126,12 @@ func ConfigECDashboard(pb *presets.Builder, db *gorm.DB) {
 						shadcn.CardDescription(h.Text("订单总数")),
 					),
 				).Class("flex-1"),
-			).Class("flex gap-4 mb-6"),
+			).Class("flex gap-4 mb-6"))
+		}
 
-			// 交互式访问量图表（参考 ec.md）
-			web.Scope(
+		// 交互式访问量图表（fc_visitor_chart，参考 ec.md）
+		if canSee("visitor_chart") {
+			sections = append(sections, web.Scope(
 				shadcn.Card(
 					shadcn.CardHeader(
 						h.Div(
@@ -159,10 +173,12 @@ func ConfigECDashboard(pb *presets.Builder, db *gorm.DB) {
 						).Attr("v-show", "locals.activeChart === 'mobile'"),
 					).Class("px-2 sm:p-6"),
 				).Class("py-0"),
-			).Init(`{activeChart: 'desktop'}`).VSlot("{ locals }"),
+			).Init(`{activeChart: 'desktop'}`).VSlot("{ locals }"))
+		}
 
-			// 图表区域
-			h.Div(
+		// 订单状态分布（fc_order_status_chart）
+		if canSee("order_status_chart") {
+			sections = append(sections, h.Div(
 				// 订单状态 Bar Chart
 				shadcn.Card(
 					shadcn.CardHeader(
@@ -179,8 +195,10 @@ func ConfigECDashboard(pb *presets.Builder, db *gorm.DB) {
 						h.Div(h.Text("展示各订单状态的数量分布")).Class("leading-none text-muted-foreground"),
 					).Class("flex-col items-start gap-2 text-sm"),
 				).Class("flex-1"),
-			).Class("flex gap-4 mt-6"),
-		).Class("container mx-auto p-4")
+			).Class("flex gap-4 mt-6"))
+		}
+
+		body := h.Div(sections...).Class("container mx-auto p-4")
 
 		r.Body = body
 		r.PageTitle = "EC Dashboard"
