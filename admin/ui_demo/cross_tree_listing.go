@@ -36,7 +36,7 @@ func ConfigCrossTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 	// 子表 B：独立注册的 ModelBuilder（有自己的 listing/editing）
 	artMB := b.Model(&CTArticle{}).URIName("cross-tree-articles")
 	artLB := artMB.Listing("Title", "Author", "Status")
-	artLB.RowMenu().Inline(true) // 平铺模式：子表格行内菜单项平铺为按钮（演示 Tooltip/Variant/IconOnly）
+	artLB.RowMenu().InlineDefaultsInMenu(true) // 自定义项平铺为按钮 + 默认 Edit/Delete 收进末尾 ⋮（演示第三态）
 	artMB.Editing("Title", "Author", "Status", "CategoryID")
 	// 富 RowMenuItem——验证跨表树子表格菜单与父行功能对齐：Icon/Tooltip/Variant/Disabled/Confirm 全支持
 	artLB.RowMenu().RowMenuItem("preview").
