@@ -55,7 +55,7 @@ func ConfigCrossTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 
 	// 父表 A：开启跨表树，引用 artMB
 	catMB := b.Model(&CTCategory{}).URIName("cross-tree-listing-demo")
-	catLB := catMB.Listing("Name", "Code", "Title", "Author", "Status").SelectableColumns(false).
+	catLB := catMB.Listing("Name", "Code").SelectableColumns(false).
 		ResizableColumns(true).
 		ReorderableColumns(true)
 	catLB.CrossTreeMode(presets.CrossTree(artMB, "CategoryID"))
