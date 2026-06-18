@@ -2,7 +2,6 @@ package ui_demo
 
 import (
 	"github.com/r0vx/admin/presets"
-	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
 	"gorm.io/gorm"
@@ -37,11 +36,22 @@ func ConfigCrossTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 	// 子表 B：独立注册的 ModelBuilder（有自己的 listing/editing）
 	artMB := b.Model(&CTArticle{}).URIName("cross-tree-articles")
 	artLB := artMB.Listing("Title", "Author", "Status")
+	artLB.RowMenu().Inline(true) // 平铺模式：子表格行内菜单项平铺为按钮（演示 Tooltip/Variant/IconOnly）
 	artMB.Editing("Title", "Author", "Status", "CategoryID")
-	// 自定义 RowMenuItem——验证跨表树子表格 ⋮ 菜单支持自定义项（非仅默认 Edit/Delete）
-	artLB.RowMenu().RowMenuItem("preview").ComponentFunc(func(obj any, id string, ctx *web.EventContext) h.HTMLComponent {
-		return shadcn.RowMenuItem("预览").SetIcon("eye").SetOnclick("vars.__window.alert('预览文档 #' + " + id + ")")
-	})
+	// 富 RowMenuItem——验证跨表树子表格菜单与父行功能对齐：Icon/Tooltip/Variant/Disabled/Confirm 全支持
+	artLB.RowMenu().RowMenuItem("preview").
+		Icon("eye").
+		Tooltip("预览文档").
+		Variant(shadcn.ButtonVariantSecondary).
+		Disabled(func(obj any, id string, ctx *web.EventContext) bool {
+			return obj.(*CTArticle).Status == "草稿" // 草稿禁预览（演示 Disabled 逐行生效）
+		}).
+		RequiresConfirmation().
+		OnClick(func(ctx *web.EventContext, id string) (web.EventResponse, error) {
+			var r web.EventResponse
+			web.AppendRunScripts(&r, "vars.__window.alert('预览文档 #' + "+id+")")
+			return r, nil
+		})
 
 	// 父表 A：开启跨表树，引用 artMB
 	catMB := b.Model(&CTCategory{}).URIName("cross-tree-listing-demo")
