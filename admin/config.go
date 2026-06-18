@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	// "github.com/aws/aws-sdk-go-v2/service/s3/types" // 移除：使用OSS抽象层
 	"github.com/iancoleman/strcase"
@@ -16,6 +17,7 @@ import (
 	"github.com/r0vx/admin/tiptapeditor"
 	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
+	"github.com/r0vx/web/sse"
 	"github.com/r0vx/x/i18n"
 	"github.com/r0vx/x/login"
 	"github.com/r0vx/x/oss"
@@ -74,6 +76,7 @@ type Config struct {
 	loginSessionBuilder *plogin.SessionBuilder
 	completeHandler     http.Handler        // autocomplete API 处理器
 	helpCenter          *helpcenter.Builder // 帮助中心（公开站 handler + admin CRUD）
+	sseHub              *sse.Hub            // SSE 推送中心
 }
 
 func (c *Config) GetPresetsBuilder() *presets.Builder {
@@ -398,14 +401,29 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	wizard_demo.ConfigWizardDemo(b, db)
 	wizard_demo.ConfigWizardDeclarativeDemo(b, db)
 	wizard_demo.ConfigWizardFullPageDemo(b, db)
-	ui_demo.ConfigNotificationDemo(b, db)
-	ui_demo.ConfigActionEnhanceDemo(b, db)
+	// SSE 推送中心（须在用到 hub 的 demo 之前创建）：DataScope 隔离模型实时刷新 + 通知实时推送。
+	b.SSEUserID(func(r *http.Request) (string, bool) {
+		u := getCurrentUser(r)
+		if u == nil {
+			return "", false
+		}
+		return fmt.Sprint(u.GetID()), true
+	})
+	sseHub := sse.New(
+		sse.Identity(b.SSEIdentity),
+		sse.Replay(64, 5*time.Minute),
+	)
+	b.SSEHub(sseHub)
+
+	ui_demo.ConfigNotificationDemo(b, db, sseHub)
+	ui_demo.ConfigActionEnhanceDemo(b, db, sseHub)
 	ui_demo.ConfigDisableRowClickDemo(b, db)
 	ui_demo.ConfigFilterDemo(b, db)
 	ui_demo.ConfigVehicleFilterDemo(b, db)
 	ui_demo.ConfigTreeSelectDemo(b, db)
 	ui_demo.ConfigListingWrapDemo(b, db)
 	ui_demo.ConfigTreeListingDemo(b, db)
+	ui_demo.ConfigCrossTreeListingDemo(b, db)
 	ui_demo.ConfigAvatarUploadDemo(b, db)
 	ui_demo.ConfigSiteSettingDemo(b, db) // Singleton(true) 单例配置页范例
 	ConfigDataScopeDemo(b, db)           // 数据隔离：同角色跨表不同隔离字段（agent_id/user_id/parent_id）
@@ -436,6 +454,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 		loginSessionBuilder: loginSessionBuilder,
 		completeHandler:     completeHandler,
 		helpCenter:          helpCenterBuilder,
+		sseHub:              sseHub,
 	}
 }
 
