@@ -11,9 +11,9 @@ require (
 	github.com/lib/pq v1.10.9
 	// github.com/markbates/goth v1.81.0 // 移除OAuth依赖
 	github.com/ory/ladon v1.3.0 // indirect
-	github.com/r0vx/admin v0.3.1
-	github.com/r0vx/web v0.2.1
-	github.com/r0vx/x v0.2.7
+	github.com/r0vx/admin v1.1.1
+	github.com/r0vx/web v1.0.0
+	github.com/r0vx/x v1.0.6
 	github.com/samber/lo v1.51.0
 	github.com/spf13/cast v1.9.2
 	github.com/stretchr/testify v1.11.1
@@ -101,7 +101,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.18.1 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/lufia/plan9stats v0.0.0-20240513124658-fba389f38bae // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
@@ -124,8 +124,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/pquerna/otp v1.5.0 // indirect
-	github.com/r0vx/htmlgo v0.3.1
-	github.com/r0vx/imaging v0.1.1 // indirect
+	github.com/r0vx/htmlgo v1.0.0
+	github.com/r0vx/imaging v1.0.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
