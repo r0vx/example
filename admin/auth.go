@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"log"
 	"net/http"
 
 	"example/models"
@@ -106,6 +107,24 @@ func initLoginSessionBuilder(db *gorm.DB, pb *presets.Builder, ab *activity.Buil
 	// Telegram 登录（Login Widget，非 OAuth2）：留空 token/name 时为 no-op、登录页不显示按钮
 	loginBuilder.TelegramLogin(telegramBotToken, telegramBotName)
 
+	// 开放注册：邮箱验证后激活。AfterSignupSendConfirmLink 为 demo 实现——生产替换为真实 SMTP/SES 发信。
+	// ⚠️ 首次对【已有数据的库】启用 signup：AutoMigrate 给 users 加 confirmed 列、存量行为 NULL/false，
+	//    双闸 (signupEnabled && signupConfirmRequired && !confirmed) 会把所有老用户(含 admin)挡在登录外。
+	//    上线前对该库执行一次：UPDATE users SET confirmed = true, confirmed_at = now() WHERE confirmed IS NULL OR confirmed = false;
+	//    （之后只有真·新注册用户走邮箱验证；不想锁存量可先 SignupConfirmRequired(false) 验证 UI 再切回。）
+	loginBuilder.
+		EnableSignup(true).
+		SignupConfirmRequired(true).
+		AfterSignupSendConfirmLink(func(r *http.Request, user interface{}, extraVals ...interface{}) error {
+			// demo：无 SMTP 时把验证链接打到日志；生产替换为真实发信
+			if len(extraVals) > 0 {
+				if link, ok := extraVals[0].(string); ok {
+					log.Println("[signup] confirm link:", link)
+				}
+			}
+			return nil
+		})
+
 	genInitialUser(db)
 
 	return plogin.NewSessionBuilder(loginBuilder, db).
@@ -164,8 +183,9 @@ func genInitialUser(db *gorm.DB) {
 		Name:   email,
 		Status: models.StatusActive,
 		UserPass: login.UserPass{
-			Account:  email,
-			Password: password,
+			Account:   email,
+			Password:  password,
+			Confirmed: true, // 种子管理员跳过邮箱验证闸，直接可登录
 		},
 	}
 	user.EncryptPassword()

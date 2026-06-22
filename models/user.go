@@ -58,6 +58,9 @@ func (u User) GetName() string {
 	return u.Name
 }
 
+// SetName 供 signup 流程写入用户显示名（实现 login.NameSetter 接口）
+func (u *User) SetName(v string) { u.Name = v }
+
 func (u User) GetID() uint {
 	return u.ID
 }
