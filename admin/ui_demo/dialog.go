@@ -228,7 +228,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 			)
 			return nil
 		}).
-		DialogContentClass("w-full sm:max-w-lg")
+		DialogContentClass(presets.DialogSizeMd)
 
 	// ────────────────────────────────────────────────────────
 	// 2b. BulkAction Dialog #2（批量修改优先级 — 第二个示例）
@@ -298,7 +298,7 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 			presets.ShowMessage(r, "导入成功（模拟）", "success")
 			return nil
 		}).
-		DialogContentClass("w-full sm:max-w-xl")
+		DialogContentClass(presets.DialogSizeMd)
 
 	// Action（无 Dialog）— 纯按钮，自定义 ButtonCompFunc
 	lb.Action("ExportData").
@@ -538,7 +538,7 @@ func ConfigDialogDemoSelector(pb *presets.Builder, db *gorm.DB) {
 		InMenu(false)
 
 	lb := b.Listing("ID", "Title", "Status", "Priority").
-		DialogContentClass("w-11/12 sm:w-4/5 md:max-w-4xl").
+		DialogContentClass(presets.DialogSizeLg).
 		SearchColumns("title").
 		PerPage(10).
 		SelectableColumns(true)

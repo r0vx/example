@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -28,6 +29,7 @@ import (
 	"github.com/r0vx/x/ui/shadcn"
 	"github.com/r0vx/x/ui/tiptap"
 	"github.com/r0vx/x/ui/unovis"
+	"github.com/r0vx/x/ui/vueflow"
 	"github.com/sunfmin/reflectutils"
 	"github.com/theplant/osenv"
 	"golang.org/x/text/language"
@@ -44,6 +46,7 @@ import (
 
 	"github.com/r0vx/admin/activity"
 	"github.com/r0vx/admin/autosync"
+	"github.com/r0vx/admin/erd"
 	"github.com/r0vx/admin/helpcenter"
 	"github.com/r0vx/admin/l10n"
 	plogin "github.com/r0vx/admin/login"
@@ -178,6 +181,10 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	// 	PublishStorage = options.StorageWrapper(PublishStorage)
 	// }
 	b := presets.New().DataOperator(gorm2op.DataOperator(db))
+	// panic 主动告警：配了 PANIC_WEBHOOK_URL 才启用（飞书/钉钉/Slack 机器人均可），空则零行为
+	if u := os.Getenv("PANIC_WEBHOOK_URL"); u != "" {
+		b.PanicNotifier(presets.WebhookPanicNotifier(u))
+	}
 	// 数据隔离全局 resolver：非 admin 只看自己的数据，admin 看全部。
 	// ownerValue 用 string（匹配 activity.ActivityLog.UserID 的 string 列）。
 	b.DataScopeResolver(func(ctx *web.EventContext) (any, bool) {
@@ -208,6 +215,10 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	// 添加 unovis 数据可视化组件资源
 	b.ExtraAsset("/unovis.js", "text/javascript", unovis.JSComponentsPack())
 	b.ExtraAsset("/unovis.css", "text/css", unovis.CSSComponentsPack())
+
+	// 添加 Vue Flow 通用画布组件资源
+	b.ExtraAsset("/vueflow.js", "text/javascript", vueflow.JSComponentsPack())
+	b.ExtraAsset("/vueflow.css", "text/css", vueflow.CSSComponentsPack())
 
 	// 添加高德地图选点组件资源
 	b.ExtraAsset("/amap.js", "text/javascript", web.ComponentsPack(amap.JSComponentsPack()))
@@ -370,13 +381,16 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	dashboardBuilder.RegisterEvents(b.GetWebBuilder())
 
 	// 主题切换：注册可用主题 + 设置默认主题
-	b.Themes(
+	// 5 套 r0vx 内置 + 42 套 tweakcn 移植预设（对标 tweakcn）
+	b.Themes(append([]*presets.Theme{
 		presets.ThemeNeutral,
 		presets.ThemeBlue,
 		presets.ThemeGreen,
 		presets.ThemeViolet,
 		presets.ThemeRose,
-	).DefaultTheme("neutral")
+		presets.ThemeNavy,
+		presets.ThemeAzure,
+	}, presets.TweakcnPresets...)...).DefaultTheme("neutral")
 
 	profileBuilder := configProfile(db, ab, loginSessionBuilder)
 
@@ -396,8 +410,12 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	completeHandler := ui_demo.ConfigAutocompleteDemo(b, db)
 	ui_demo.ConfigTiptapDemo(b, db)
 	ui_demo.ConfigFileInputDemo(b)
+	ui_demo.ConfigVueFlowDemo(b)
 	ui_demo.ConfigDialogDemo(b, db)
+	ui_demo.ConfigNonIDPKDemo(b, db)
 	ui_demo.ConfigEditingActionsDemo(b, db)
+	ui_demo.ConfigRowRefreshDemo(b, db)
+	ui_demo.ConfigRelayPaginationDemo(b, db)
 	wizard_demo.ConfigWizardDemo(b, db)
 	wizard_demo.ConfigWizardDeclarativeDemo(b, db)
 	wizard_demo.ConfigWizardFullPageDemo(b, db)
@@ -427,6 +445,9 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	ui_demo.ConfigAvatarUploadDemo(b, db)
 	ui_demo.ConfigSiteSettingDemo(b, db) // Singleton(true) 单例配置页范例
 	ConfigDataScopeDemo(b, db)           // 数据隔离：同角色跨表不同隔离字段（agent_id/user_id/parent_id）
+	ui_demo.ConfigRecordGraphDemo(b, db) // 记录关系图（ego 图）演示
+	// ERD 数据模型图
+	erd.New(b, db).MountTo(b, "/erd", "数据模型图")
 
 	crud_demo.ConfigUser(b, ab, db, publisher, loginSessionBuilder)
 	b.Use(
@@ -519,6 +540,10 @@ func configMenuOrder(b *presets.Builder) {
 	// 使用 MenuSection 创建带标签的菜单分区
 	// 参考 shadcn-admin-demo 的分组样式
 
+	// 设计原则：每个菜单可见模型都归入某个 MenuGroup 作为子项（子项无图标=干净，
+	// 与 shadcn-admin-demo 一致），不再留裸顶层项，避免掉进底部未分类的扁平列表。
+	// uriName 以实际注册名为准（系统模块多为结构体名推导的 kebab 复数）。
+
 	// Main 分区 - 核心业务功能
 	mainSection := b.MenuSection("Main").Items(
 		b.MenuGroup("EC Management").SubItems(
@@ -527,7 +552,23 @@ func configMenuOrder(b *presets.Builder) {
 			"products",
 			"categories",
 			"sub-categories",
+			"customers",
+			"membership-cards",
 		).Icon("shopping-cart"),
+		b.MenuGroup("Content").SubItems(
+			"posts",            // Post → 文章
+			"articles",         // helpcenter Article → 帮助文档
+			"seo-settings",     // seo SEOSetting → SEO 管理
+			"micro-sites",      // microsite MicroSite → 微站点
+		).Icon("file-text"),
+		b.MenuGroup("Project Management").SubItems(
+			"projects",
+			"tasks",
+		).Icon("folder"),
+		b.MenuGroup("Localization").SubItems(
+			"l10n-models",
+			"l10n-model-with-versions",
+		).Icon("languages"),
 		b.MenuGroup("Page Builder").SubItems(
 			"page-builder-pages",
 			"shared-containers",
@@ -537,46 +578,66 @@ func configMenuOrder(b *presets.Builder) {
 		).Icon("layout-grid"),
 	)
 
-	// System 分区 - 系统管理功能
-	systemSection := b.MenuSection("System").Items(
-		b.MenuGroup("User Management").SubItems(
-			"users",
-			"Role",
-		).Icon("users"),
-		"Worker",
-		"ActivityLogs",
-	)
-
-	// Components 分区 - 示例组件
-	componentsSection := b.MenuSection("Components").Items(
-		b.MenuGroup("Featured Models Management").SubItems(
-			"InputDemo",
-			"DemoCase",
-			"Post",
-			"qor-seo-settings",
-			"List Editor Example",
-			"customers",
-			"membership-cards",
-			"ListModels",
-			"MicrositeModels",
-			"L10nModel",
-			"L10nModelWithVersion",
-			"NotifDemo",
-			"AutocompleteDemo",
-			"TiptapDemo",
-			"dialog-demos",
-			"listing-wrap-demo",
-			"tree-listing-demo",
-			"avatar-upload-demo",
-			"site-setting",
-		).Icon("list"),
-		b.MenuGroup("Graph Demo").SubItems(
+	// Analytics 分区 - 图表与数据可视化
+	analyticsSection := b.MenuSection("Analytics").Items(
+		b.MenuGroup("Charts").SubItems(
 			"graph-demos",
 			"network-graph-demo",
 			"scatter-plot-demo",
 			"treemap-demo",
+			"shadcn-chart",
 		).Icon("bar-chart"),
-		b.MenuGroup("Shadcn Demo").SubItems(
+	)
+
+	// System 分区 - 系统管理功能
+	systemSection := b.MenuSection("System").Items(
+		b.MenuGroup("User & Access").SubItems(
+			"users",
+			"roles",          // adminrole perm.Role
+			"login-sessions", // plogin 会话（若 InMenu(false) 自动跳过）
+		).Icon("users"),
+		b.MenuGroup("Operations").SubItems(
+			"workers",         // worker
+			"activity-logs",   // activity ActivityLog
+			"media-libraries", // media MediaLibrary
+			"redirects",       // redirection Redirect
+			"site-setting",    // 站点设置单例
+		).Icon("settings"),
+	)
+
+	// Components 分区 - 示例组件（对齐 demo：单分区下多个可折叠分组）
+	componentsSection := b.MenuSection("Components").Items(
+		b.MenuGroup("Form & Input").SubItems(
+			"input-demos",
+			"file-input-demo",
+			"autocomplete-demos",
+			"tiptap-demos",
+			"filter-demos",
+			"vehicle-filter-demos",
+			"tree-select-demos",
+		).Icon("list"),
+		b.MenuGroup("Data & Listing").SubItems(
+			"list-models",
+			"tree-listing-demo",
+			"cross-tree-listing-demo",
+			"cross-tree-articles",
+			"listing-wrap-demo",
+			"readonly-list",
+			"editing-actions-demos",
+			"action-enhance-demo",
+			"dialog-demos",
+			"notif-demos",
+			"avatar-upload-demo",
+		).Icon("table"),
+		b.MenuGroup("Workflow & Scope").SubItems(
+			"wizard-demos",
+			"wizard-declarative",
+			"scope-agent-deal",
+			"scope-user-note",
+			"scope-org-doc",
+			"demo-cases",
+		).Icon("workflow"),
+		b.MenuGroup("Shadcn UI").SubItems(
 			"shadcn-basic-inputs",
 			"shadcn-selections",
 			"shadcn-dialog",
@@ -599,6 +660,7 @@ func configMenuOrder(b *presets.Builder) {
 			"shadcn-filter",
 			"shadcn-tree-view",
 			"shadcn-cascader",
+			"shadcn-timeline",
 			"shadcn-chart",
 			"shadcn-admin-demo",
 		).Icon("component"),
@@ -606,6 +668,7 @@ func configMenuOrder(b *presets.Builder) {
 
 	b.MenuOrder(
 		mainSection,
+		analyticsSection,
 		systemSection,
 		componentsSection,
 	)

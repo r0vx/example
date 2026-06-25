@@ -1,6 +1,8 @@
 package shadcn_demo
 
 import (
+	"time"
+
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
@@ -54,6 +56,7 @@ func configBasicInputs(b *presets.Builder) {
 	m.Editing().Only()
 
 	m.RegisterEventFunc("update", update)
+	m.RegisterEventFunc("demoBusy", demoBusy)
 
 	m.Listing().PageFunc(func(ctx *web.EventContext) (r web.PageResponse, err error) {
 		injectDemoCSS(ctx)
@@ -232,6 +235,30 @@ func shadcnBasicInputsBody(ctx *web.EventContext) h.HTMLComponent {
 			h.Div(
 				Button(h.Text("Update")).On("click", web.POST().EventFunc("update").Go()),
 			).Class("demo-section"),
+
+			// Click + Busy + Toast：防重 / 单按钮 loading / 成功提示
+			h.Div(
+				h.H2("Button 防重 / Loading / Toast"),
+				h.Div(
+					// 单按钮转圈 + 顶部 loading toast（完成自动消失）
+					Button(h.Text("Busy + Toast")).
+						Click(web.Plaid().EventFunc("demoBusy").Go()).
+						Busy().
+						Toast("加载中…", ToasterPositionTopCenter),
+					// 只转圈不弹
+					Button(h.Text("仅 Busy")).Variant(ButtonVariantOutline).
+						Click(web.Plaid().EventFunc("demoBusy").Go()).
+						Busy(),
+					// 只弹 loading toast 不转圈（右下，完成消失）
+					Button(h.Text("仅 Toast")).Variant(ButtonVariantSecondary).
+						Click(web.Plaid().EventFunc("demoBusy").Go()).
+						Toast("提交中…", ToasterPositionBottomRight),
+					// 对比：全局 Loading 会带动所有 Loading 按钮
+					Button(h.Text("全局 Loading")).Variant(ButtonVariantGhost).
+						Loading(true).
+						Attr("@click", web.Plaid().EventFunc("demoBusy").Go()),
+				).Class("demo-row"),
+			).Class("demo-section"),
 		).VSlot("{ locals, form }").FormInit(h.JSONString(formData)),
 	).Style("max-width: 600px; margin: 0 auto;")
 }
@@ -261,5 +288,11 @@ func update(ctx *web.EventContext) (r web.EventResponse, err error) {
 	ctx.Flash = verr
 	r.Reload = true
 
+	return
+}
+
+// demoBusy 演示用慢事件：睡 1.5s 让按钮 loading 可见
+func demoBusy(ctx *web.EventContext) (r web.EventResponse, err error) {
+	time.Sleep(1500 * time.Millisecond)
 	return
 }

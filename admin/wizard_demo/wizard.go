@@ -113,7 +113,7 @@ func ConfigWizardDemo(b *presets.Builder, db *gorm.DB) {
 			r.Emit(presets.NotifModelsUpdated(&models.WizardDemo{}), presets.PayloadModelsUpdated{})
 			return nil
 		}).
-		DialogContentClass("max-w-lg")
+		DialogContentClass(presets.DialogSizeMd)
 
 	w.Install(mb, "新建商户向导")
 }

@@ -80,6 +80,9 @@ func Router(db *gorm.DB) http.Handler {
 	mux := http.NewServeMux()
 	c.loginSessionBuilder.Mount(mux)
 
+	// SSE 推送端点（在登录中间件之后，请求上下文已含用户）
+	mux.Handle("/sse", c.sseHub)
+
 	// 静态文件服务 - 服务 /system/ 路径下的媒体文件
 	// 文件存储在 ./public/ 目录下
 	mux.Handle("/system/", http.StripPrefix("/system/", http.FileServer(http.Dir("public/system"))))

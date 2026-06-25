@@ -24,6 +24,10 @@ func ConfigFilterDemo(b *presets.Builder, db *gorm.DB) {
 	listing.SearchColumns("title")
 	listing.PerPage(20)
 
+	// 导出：工具栏导出按钮 → 选列 Dialog（候选=上面 Listing 的列，默认勾当前可见列）→ 下载 CSV
+	// 自动复用当前 keyword + 筛选条件 + DataScope 行级隔离
+	listing.Exportable()
+
 	// 金额格式化
 	listing.Field("Amount").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		d := obj.(*models.FilterDemo)

@@ -662,7 +662,7 @@ func shadcnAdminDemoBody(ctx *web.EventContext) h.HTMLComponent {
 												).Class("flex items-center px-2 py-1.5 rounded hover:bg-muted cursor-pointer text-sm"),
 											),
 										).Class("mt-4"),
-									).Class("sm:max-w-md"),
+									).Class(presets.DialogSizeSm),
 								),
 							).Class("mr-4"),
 							Button(adminIcon("bell")).Variant(ButtonVariantGhost).Size(ButtonSizeIcon).Class("mr-2"),

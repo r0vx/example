@@ -21,7 +21,7 @@ import (
 //   - 与 notification 集成（UpdateFunc 内部调 notifier 发通知）
 //
 // URI: /action-enhance-demo
-func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
+func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB, sseHub notification.Pusher) {
 	if err := db.AutoMigrate(&models.WizardDemo{}); err != nil {
 		panic(err)
 	}
@@ -30,6 +30,8 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 	notifier := notification.New(
 		notification.NewToastChannel(),
 		notification.NewDatabaseChannel(db, notificationCurrentUserID),
+		// SSE：操作后把通知实时推给接收者，铃铛未读数/面板实时刷新
+		notification.NewSSEChannel(sseHub, notificationCurrentUserID, presets.NotifNotificationUpdated),
 	)
 
 	// D2 i18n 演示：模型不设中文 Label，用默认 ASCII label "WizardDemos"，
@@ -147,6 +149,7 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 			return ok && d.Status != "published" // 已发布则隐藏升级
 		}).
 		RequiresConfirmation(). // 确认文案走 i18n（WizardDemosUpgradeConfirmTitle/Prompt）
+		Toast("升级中…").          // 确认后弹 loading toast，完成自动消失
 		UpdateFunc(func(id string, ctx *web.EventContext, r *web.EventResponse) error {
 			// 演示：实际项目中此处应更新 d.Status 字段；这里仅发通知
 			notifier.Success(ctx, r, "已升级商户 #"+id)
@@ -161,6 +164,7 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 			d, ok := obj.(*models.WizardDemo)
 			return ok && d.Status != "published" // 已发布则隐藏升级
 		}).
+		Toast("升级中…").          // 确认后弹 loading toast，完成自动消失
 		RequiresConfirmation(). // 确认文案走 i18n（WizardDemosUpgradeConfirmTitle/Prompt）
 		UpdateFunc(func(id string, ctx *web.EventContext, r *web.EventResponse) error {
 			// 演示：实际项目中此处应更新 d.Status 字段；这里仅发通知
@@ -179,8 +183,21 @@ func ConfigActionEnhanceDemo(b *presets.Builder, db *gorm.DB) {
 		}).
 		UpdateFunc(func(id string, ctx *web.EventContext, r *web.EventResponse) error {
 			notifier.Warning(ctx, r, "已重置商户 #"+id)
-			r.Reload = true
 			return nil
+		})
+
+	// --- 复制项演示：纯客户端复制，无服务端事件 ---
+	// presets 的 rm.RowMenuItem 无 raw JS onclick，走 ComponentFunc 返回底层 shadcn.RowMenuItem，
+	// 用 SetOnclick 调全局助手 r0vxCopy（x v1.1.3+，含非 https execCommand 回落 + toast）。
+	// 关键：onclick 在两种上下文执行，必须用 vars.__window 取 window（不能用裸 window，也不能用 $event）：
+	//   ① 桌面行内：Go 渲染真按钮、Vue 编译 @click（有 $event 无裸 window）
+	//   ② H5/下拉/卡片：DataTable.executeMenuItemClick 用 new Function('plaid','vars',...) 执行（有 window 无 $event）
+	// vars.__window（corejs app.ts 注入）两边都在 → 唯一通用写法。
+	rm.RowMenuItem("CopyID").
+		ComponentFunc(func(obj any, id string, ctx *web.EventContext) h.HTMLComponent {
+			return RowMenuItem("复制ID").
+				SetIcon("copy").
+				SetOnclick("vars.__window.r0vxCopy('" + id + "','已复制商户 ID')")
 		})
 
 	// --- fm_ 权限演示：行菜单项「角色级权限闸」，与筛选项 fl_ 完全同构 ---

@@ -117,7 +117,7 @@ func ConfigMembershipCard(b *presets.Builder, db *gorm.DB, ab *activity.Builder)
 									EventFunc(eventCardEditNumberSave).
 									Query(presets.ParamID, id).Go()),
 						),
-					).Class("sm:max-w-sm"),
+					).Class(presets.DialogSizeXs),
 				).Attr(":open", "locals.show").
 					OnUpdateOpen("locals.show = $event"),
 			).VSlot("{ locals }").Init("{show: true}"),

@@ -95,7 +95,7 @@ func ConfigNestedFieldDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder
 									EventFunc(eventCustomerEditCardSave).
 									Query(presets.ParamID, customerID).Go()),
 						),
-					).Class("sm:max-w-sm"),
+					).Class(presets.DialogSizeXs),
 				).Attr(":open", "locals.show").
 					OnUpdateOpen("locals.show = $event"),
 			).VSlot("{ locals }").Init("{show: true}"),

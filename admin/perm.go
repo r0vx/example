@@ -19,6 +19,9 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 			// 注意：seo 编辑权限闸 editIsAllowed 接线后（移植回归修复），启用 perm 的项目
 			// 必须有能匹配 `:seo:seo_settings:` + `perm_seo_edit` 的 allow 策略，否则 SEO 不可编辑。
 			perm.PolicyFor(models.RoleAdmin).WhoAre(perm.Allowed).ToDo(perm.Anything).On(perm.Anything),
+			// RowLevelRefresh demo：放行所有人访问（演示用，新模型默认无授权策略会被拒）
+			perm.PolicyFor(perm.Anybody).WhoAre(perm.Allowed).ToDo(perm.Anything).On("*:row_refresh_demo:*"),
+			perm.PolicyFor(perm.Anybody).WhoAre(perm.Allowed).ToDo(perm.Anything).On("*:relay_pagination_demo:*"),
 			// 功能角色 demo（同角色不同用户、不同权限）：在 Editor 等「基础角色」之上，给用户附加
 			// ProductManager / UserManager 这种「功能角色」按模块细分能力。subject 字符串须与角色 Name 一致
 			//（User.GetRoles() 返回 role.Name）。用户 A=[Editor,ProductManager]→能管产品；B=[Editor,UserManager]→能管用户。

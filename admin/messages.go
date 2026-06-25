@@ -37,6 +37,8 @@ type Messages struct {
 	RoleEditor                     string
 	RoleViewer                     string
 	RoleUnknown                    string
+	PasswordChangePublicUserError  string
+	PasswordLengthError            string
 }
 
 var Messages_en_US = &Messages{
@@ -68,6 +70,8 @@ var Messages_en_US = &Messages{
 	RoleEditor:                     "Editor",
 	RoleViewer:                     "Viewer",
 	RoleUnknown:                    "Unknown Role",
+	PasswordChangePublicUserError:  "Cannot change password for public user",
+	PasswordLengthError:            "Password must be 6 to 20 characters",
 }
 
 var Messages_zh_CN = &Messages{
@@ -99,6 +103,8 @@ var Messages_zh_CN = &Messages{
 	RoleEditor:                     "编辑员",
 	RoleViewer:                     "查看者",
 	RoleUnknown:                    "未知角色",
+	PasswordChangePublicUserError:  "无法修改公共用户的密码",
+	PasswordLengthError:            "密码长度需为 6-20 个字符",
 }
 
 type Messages_ModelsI18nModuleKey struct {

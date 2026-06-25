@@ -30,7 +30,7 @@ func notificationCurrentUserID(ctx *web.EventContext) string {
 //  3. 接通 Bell UI（presets NotificationFunc）
 //  4. 注册 mark_read / mark_all_read 事件
 //  5. 提供发送通知的 demo 按钮
-func ConfigNotificationDemo(b *presets.Builder, db *gorm.DB) {
+func ConfigNotificationDemo(b *presets.Builder, db *gorm.DB, sseHub notification.Pusher) {
 	if err := db.AutoMigrate(&notification.Model{}); err != nil {
 		panic(err)
 	}
@@ -38,7 +38,12 @@ func ConfigNotificationDemo(b *presets.Builder, db *gorm.DB) {
 	notifier := notification.New(
 		notification.NewToastChannel(),
 		notification.NewDatabaseChannel(db, notificationCurrentUserID),
+		// SSE：把通知实时推给接收者，触发其铃铛刷新（事件名与 presets 铃铛监听一致）
+		notification.NewSSEChannel(sseHub, notificationCurrentUserID, presets.NotifNotificationUpdated),
 	)
+
+	// 注册通知面板 i18n（en/zh），否则面板回退英文文案
+	notification.RegisterI18n(b)
 
 	// 接通顶栏 Bell：未读数 + 内容渲染
 	b.NotificationFunc(

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // portalState 演示 portal 状态
@@ -131,7 +131,7 @@ func portalMenuItems(ctx *web.EventContext) (r web.EventResponse, err error) {
 				web.Scope(
 					web.Portal().Loader(web.POST().EventFunc("portalAddItemForm")).Name("addItemForm").Visible("true"),
 				).VSlot("{ locals, form }").FormInit(s),
-			).Class("sm:max-w-md"),
+			).Class(presets.DialogSizeSm),
 		),
 	)
 

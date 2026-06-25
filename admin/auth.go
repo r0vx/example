@@ -10,6 +10,7 @@ import (
 	plogin "github.com/r0vx/admin/login"
 	"github.com/r0vx/admin/presets"
 	h "github.com/r0vx/htmlgo"
+	"github.com/r0vx/x/i18n"
 	"github.com/r0vx/x/login"
 	"github.com/r0vx/x/login/provider/wechat"
 	"github.com/r0vx/x/perm"
@@ -79,18 +80,19 @@ func initLoginSessionBuilder(db *gorm.DB, pb *presets.Builder, ab *activity.Buil
 				if err := in(r, user, extraVals...); err != nil {
 					return err
 				}
+				msgr := i18n.MustGetModuleMessages(r, I18nExampleKey, Messages_en_US).(*Messages)
 				u := user.(*models.User)
 				if u.GetAccountName() == loginInitialUserEmail {
 					return &login.NoticeError{
 						Level:   login.NoticeLevel_Error,
-						Message: "Cannot change password for public user",
+						Message: msgr.PasswordChangePublicUserError,
 					}
 				}
 				password := extraVals[0].(string)
-				if len(password) < 12 {
+				if len(password) < 6 || len(password) > 20 {
 					return &login.NoticeError{
 						Level:   login.NoticeLevel_Error,
-						Message: "Password cannot be less than 12 characters",
+						Message: msgr.PasswordLengthError,
 					}
 				}
 				return nil

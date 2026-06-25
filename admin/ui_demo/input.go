@@ -62,10 +62,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 		SearchColumns("corp_id", "provider_name").
 		PerPage(20)
 
-	cl.OrderableFields([]*presets.OrderableField{
-		{FieldName: "Slider1", DBColumn: "slider1"},
-		{FieldName: "UpdatedAt", DBColumn: "updated_at"},
-	})
+	cl.OrderableFields("Slider1", "UpdatedAt")
 
 	// ID 列 - 固定列宽 60px
 	cl.Field("ID").CellClass("w-[60px]")
@@ -109,26 +106,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 		}
 	})
 
-	// // 排序
-	// inputDemo.Listing().OrderableFields([]*presets.OrderableField{
-	// 	{FieldName: "slider1", DBColumn: "Slider1"},
-	// 	{FieldName: "updated_at", DBColumn: "UpdatedAt"},
-	// })
-
-	// inputDemo.Listing().OrderableFields([]*presets.OrderableField{
-	// 	{
-	// 		FieldName: "ID",
-	// 		DBColumn:  "id",
-	// 	},
-	// 	{
-	// 		FieldName: "TextField1",
-	// 		DBColumn:  "text_field1",
-	// 	},
-	// 	{
-	// 		FieldName: "Switch1",
-	// 		DBColumn:  "switch1",
-	// 	},
-	// })
+	// 排序白名单示例：cl.OrderableFields("ID", "TextField1", "Switch1")
 
 	// 编辑配置
 	ed := inputDemo.Editing(
@@ -634,7 +612,7 @@ func ConfigureDialogCustomerSelector(db *gorm.DB, pb *presets.Builder) {
 		InMenu(true)
 	registerEventSelectCustomer(db, pb)
 
-	lb := b.Listing().DialogContentClass("w-11/12 sm:w-4/5 md:max-w-4xl").
+	lb := b.Listing().DialogContentClass(presets.DialogSizeLg).
 		PerPage(20).
 		SearchColumns("name").
 		SelectableColumns(true).

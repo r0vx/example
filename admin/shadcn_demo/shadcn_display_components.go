@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnDisplayComponentsDemo 虚拟模型
@@ -217,6 +217,33 @@ func shadcnDisplayComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 				// 代码模式
 				DisplayField().Value("{\n  \"name\": \"r0vx\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Admin framework\"\n}").Label("JSON 内容").Code(true).Copy(true),
 			).Class("mb-4"),
+		).Class("demo-section"),
+
+		// CopyButton
+		h.Div(
+			h.H2("CopyButton").Style("font-size: 18px; font-weight: 600; margin-bottom: 12px;"),
+			h.P(h.Text("独立复制按钮:点击复制指定文本,2s 内图标变 ✓。内部复用 Button,继承 Variant/Size;非 https 自动回落 execCommand")).Style("color: #666; font-size: 14px; margin-bottom: 16px;"),
+			h.Div(
+				CopyButton("https://r0vx.dev/copy-button-test"),               // 纯图标 ghost
+				CopyButton("https://r0vx.dev/copy-button-test").Label("复制链接"), // 带文字
+				CopyButton("abc-123-def-456").Label("Outline").Variant(ButtonVariantOutline),
+				CopyButton("abc-123-def-456").Label("Secondary").Variant(ButtonVariantSecondary),
+				CopyButton("small").Variant(ButtonVariantOutline).Size(ButtonSizeIconSm),
+				CopyButton("https://r0vx.dev/with-tooltip").Tooltip("复制链接"), // 带悬停提示
+				CopyButton("disabled").Disabled(true),
+			).Class("demo-row"),
+			// ButtonGroup 内分段：CopyButton 渲染裸 <button>，自动吃 [&>button] 分段样式
+			h.Div(
+				ButtonGroup(
+					Button(h.Text("https://r0vx.dev/share")).Variant(ButtonVariantOutline),
+					CopyButton("https://r0vx.dev/share").Variant(ButtonVariantOutline),
+				),
+				ButtonGroup(
+					Button(h.Text("编辑")).Variant(ButtonVariantOutline),
+					Button(h.Text("分享")).Variant(ButtonVariantOutline),
+					CopyButton("token-xyz-789").Variant(ButtonVariantOutline).Tooltip("复制 Token"),
+				),
+			).Class("demo-row"),
 		).Class("demo-section"),
 
 		// 功能特性说明

@@ -56,6 +56,15 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 		{"value": "6", "text": "Beef", "group": "肉类"},
 	}
 
+	// 互斥分组选项：type 组（Agent/Service/Manager）至多选一个，Viewer/Editor 可多选
+	exclusiveItems := []map[string]string{
+		{"value": "agent", "text": "Agent", "exclusiveGroup": "type"},
+		{"value": "service", "text": "Service", "exclusiveGroup": "type"},
+		{"value": "manager", "text": "Manager", "exclusiveGroup": "type"},
+		{"value": "viewer", "text": "Viewer"},
+		{"value": "editor", "text": "Editor"},
+	}
+
 	return h.Div(
 		// 页面标题
 		h.Div(
@@ -111,6 +120,23 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					h.Tag("code").Children(h.Text("{{locals.groupedValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 			).Init(`{groupedValue: ''}`).VSlot("{ locals }"),
+		).Class("demo-section"),
+
+		// 互斥分组（多选）
+		h.Div(
+			h.H2("互斥分组（多选）").Style("font-size: 18px; font-weight: 600; margin-bottom: 12px;"),
+			h.P(h.Text("type 组（Agent/Service/Manager）互斥至多选一个；Viewer/Editor 可自由多选")).Style("color: #666; font-size: 14px; margin-bottom: 16px;"),
+			web.Scope(
+				shadcn.Autocomplete().
+					Attr("v-model", "locals.exclusiveValue").
+					Items(exclusiveItems).
+					Multiple(true).
+					Placeholder("选择角色..."),
+				h.Div(
+					h.Text("选中的值: "),
+					h.Tag("code").Children(h.Text("{{locals.exclusiveValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+				).Style("margin-top: 12px; font-size: 14px;"),
+			).Init(`{exclusiveValue: []}`).VSlot("{ locals }"),
 		).Class("demo-section"),
 
 		// 4. 创建新项

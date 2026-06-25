@@ -39,6 +39,7 @@ func ConfigVehicleFilterDemo(b *presets.Builder, db *gorm.DB) {
 	mb := b.Model(&models.VehicleFilterDemo{}).URIName("vehicle-filter-demos").Label("Vehicle Filter Demos")
 
 	listing := mb.Listing("ID", "Title", "Brand", "Maker", "Series", "Price", "CreatedAt")
+	listing.ResponsiveCards(false) // ponytail: 临时开表格视图测移动端 action 列横滚；测完删
 	listing.SearchColumns("title")
 	listing.PerPage(20)
 

@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // dialogFormValue 对话框表单数据

@@ -8,6 +8,7 @@ import (
 
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/web"
+	"github.com/r0vx/x/ui/shadcn"
 	"gorm.io/gorm"
 )
 
@@ -69,9 +70,36 @@ func ConfigDataScopeDemo(b *presets.Builder, db *gorm.DB) {
 
 	// 表A：按 agent_id 隔离
 	mbA := b.Model(&ScopeAgentDeal{}).URIName("scope-agent-deal")
-	mbA.Listing("ID", "Title", "AgentID")
+	lbA := mbA.Listing("ID", "Title", "AgentID")
 	mbA.Editing("Title", "AgentID")
 	mbA.DataScope("AgentID").Resolver(scopeOwnerOf(func(u *models.User) any { return u.GetID() }))
+	// 行菜单：弹中央 Dialog 只编辑 Title 字段（复用 mb.Editing 配置 + partial-safe，AgentID 不受影响）。须在 Editing 之后调。
+	// DialogSizeSm：单字段用小尺寸（不设则继承标准 Dialog 半屏默认，单字段偏宽）。
+	lbA.RowMenu().RowMenuItem("快速改标题").Icon("pencil").
+		EditInDialog("Title").DialogContentClass(presets.DialogSizeSm)
+	// 筛选项（用于测 SSE 推送时不冲掉正在编辑的筛选）：AgentID 多选（可勾多项再应用，最契合测试）+ CreatedAt 范围。
+	// 整表 reload 路径（无 RowLevelRefresh），正是 guard 保护的场景。
+	lbA.FilterDataFunc(func(ctx *web.EventContext) shadcn.FilterData {
+		return []*shadcn.FilterItem{
+			{
+				Key:          "agent_id",
+				Label:        "Agent",
+				ItemType:     shadcn.FilterItemTypeMultipleSelect,
+				SQLCondition: `agent_id %s ?`,
+				Options: []shadcn.FilterSelectOption{
+					{Value: "1", Text: "Agent 1"},
+					{Value: "2", Text: "Agent 2"},
+					{Value: "3", Text: "Agent 3"},
+				},
+			},
+			{
+				Key:          "created_at",
+				Label:        "Created At",
+				ItemType:     shadcn.FilterItemTypeDatetimeRangePicker,
+				SQLCondition: `created_at %s ?`,
+			},
+		}
+	})
 
 	// 表B：按 user_id 隔离
 	mbB := b.Model(&ScopeUserNote{}).URIName("scope-user-note")

@@ -77,7 +77,7 @@ func ConfigWizardDeclarativeDemo(b *presets.Builder, db *gorm.DB) {
 		SubmitLabel("确认提交").
 		SessionStore(wizardSessionStore).
 		SessionTTL(15 * time.Minute).
-		DialogContentClass("max-w-xl")
+		DialogContentClass(presets.DialogSizeMd)
 
 	w.OnSubmit(func(ctx *web.EventContext, r *web.EventResponse) error {
 		data := w.Data(ctx)

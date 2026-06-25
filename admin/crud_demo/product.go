@@ -31,6 +31,11 @@ func ConfigProduct(b *presets.Builder, _ *gorm.DB, wb *worker.Builder, publisher
 
 	// listing.ActionsAsMenu(true)
 
+	// 异步 CSV 导出（worker 后台 job → 传 OSS → 进度页可点下载链接）：
+	// 工具栏「导出」按钮 → ChipGroup 选列 → 后台 job 跑完给下载链接。
+	// 复用当前筛选 + DataScope 隔离（触发时捕获、后台重放）。
+	wb.ExportJob(p)
+
 	noParametersJob := wb.ActionJob(
 		"No parameters",
 		p,
