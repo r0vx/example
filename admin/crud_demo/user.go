@@ -103,7 +103,7 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 		currentRoles := user.GetRoles()
 		return shadcn.Select().Items(roleItems).Label(field.Label).
 			Attr(web.VField(field.FormKey, currentRoles)...).
-			Attr("multiple", "true").
+			Multiple(true).
 			ErrorMessages(field.Errors...)
 	})
 
@@ -147,7 +147,7 @@ func ConfigureFavorPostSelectDialog(db *gorm.DB, mb *presets.ModelBuilder, publi
 		return h.Div(
 			shadcn.Input().Label(field.Label).Value(fmt.Sprint(user.FavorPostID)).
 				Attr(web.VField(field.FormKey, fmt.Sprint(user.FavorPostID))...).
-				Attr("readonly", "true").Class("hidden"),
+				Readonly(true).Class("hidden"),
 			shadcn.Button(h.Text(postTitle)).
 				Variant(shadcn.ButtonVariantOutline).
 				On("click", "locals.showPostSelector = true"),

@@ -43,26 +43,19 @@ func ConfigVehicleFilterDemo(b *presets.Builder, db *gorm.DB) {
 	listing.SearchColumns("title")
 	listing.PerPage(20)
 
-	// 品牌 — ID 转中文名
-	listing.Field("Brand").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
-		d := obj.(*models.VehicleFilterDemo)
+	// 品牌/厂商/车系 — ID 转中文名；价格格式化。用 presets.Cell 免 obj 断言。
+	listing.Field("Brand").ComponentFunc(presets.Cell(func(d *models.VehicleFilterDemo, field *presets.FieldContext) h.HTMLComponent {
 		return h.Text(brandNames[d.Brand])
-	})
-	// 厂商 — ID 转中文名
-	listing.Field("Maker").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
-		d := obj.(*models.VehicleFilterDemo)
+	}))
+	listing.Field("Maker").ComponentFunc(presets.Cell(func(d *models.VehicleFilterDemo, field *presets.FieldContext) h.HTMLComponent {
 		return h.Text(makerNames[d.Maker])
-	})
-	// 车系 — ID 转中文名
-	listing.Field("Series").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
-		d := obj.(*models.VehicleFilterDemo)
+	}))
+	listing.Field("Series").ComponentFunc(presets.Cell(func(d *models.VehicleFilterDemo, field *presets.FieldContext) h.HTMLComponent {
 		return h.Text(seriesNames[d.Series])
-	})
-	// 价格格式化
-	listing.Field("Price").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
-		d := obj.(*models.VehicleFilterDemo)
+	}))
+	listing.Field("Price").ComponentFunc(presets.Cell(func(d *models.VehicleFilterDemo, field *presets.FieldContext) h.HTMLComponent {
 		return h.Text(fmt.Sprintf("¥%.2f", d.Price))
-	})
+	}))
 
 	// 品牌（第一级）
 	brandLevel := []shadcn.FilterLinkageItem{

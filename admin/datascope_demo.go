@@ -79,26 +79,16 @@ func ConfigDataScopeDemo(b *presets.Builder, db *gorm.DB) {
 		EditInDialog("Title").DialogContentClass(presets.DialogSizeSm)
 	// 筛选项（用于测 SSE 推送时不冲掉正在编辑的筛选）：AgentID 多选（可勾多项再应用，最契合测试）+ CreatedAt 范围。
 	// 整表 reload 路径（无 RowLevelRefresh），正是 guard 保护的场景。
+	// 新写法：构造器 + presets.Filters 适配；SQLCondition 自动推导（agent_id/created_at 即列名）。
 	lbA.FilterDataFunc(func(ctx *web.EventContext) shadcn.FilterData {
-		return []*shadcn.FilterItem{
-			{
-				Key:          "agent_id",
-				Label:        "Agent",
-				ItemType:     shadcn.FilterItemTypeMultipleSelect,
-				SQLCondition: `agent_id %s ?`,
-				Options: []shadcn.FilterSelectOption{
-					{Value: "1", Text: "Agent 1"},
-					{Value: "2", Text: "Agent 2"},
-					{Value: "3", Text: "Agent 3"},
-				},
-			},
-			{
-				Key:          "created_at",
-				Label:        "Created At",
-				ItemType:     shadcn.FilterItemTypeDatetimeRangePicker,
-				SQLCondition: `created_at %s ?`,
-			},
-		}
+		return presets.Filters(
+			shadcn.MultipleSelectFilterItem("agent_id", "Agent", []shadcn.FilterSelectOption{
+				{Value: "1", Text: "Agent 1"},
+				{Value: "2", Text: "Agent 2"},
+				{Value: "3", Text: "Agent 3"},
+			}),
+			shadcn.DatetimeRangeFilterItem("created_at", "Created At"),
+		)
 	})
 
 	// 表B：按 user_id 隔离

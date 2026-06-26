@@ -7,8 +7,8 @@ import (
 
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
-	"github.com/r0vx/web"
 	. "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
 )
 
 // BrandGrid 品牌网格容器模型
@@ -61,7 +61,7 @@ func RegisterBrandGridContainer(pb *pagebuilder.Builder) {
 	vb.Model(&BrandGrid{}).Editing("AddTopSpace", "AddBottomSpace", "AnchorID", "Brands")
 	vb.ConfigureEditing(func(eb *presets.EditingBuilder) {
 		fb := pb.GetPresetsBuilder().NewFieldsBuilder(presets.WRITE).Model(&Brand{}).Only("ImageURL", "Name")
-		eb.Field("Brands").Nested(fb, &presets.DisplayFieldInSorter{Field: "Name"})
+		eb.Field("Brands").Nested(fb).SorterField("Name")
 	})
 }
 

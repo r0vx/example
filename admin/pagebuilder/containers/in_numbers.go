@@ -8,8 +8,8 @@ import (
 
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
-	"github.com/r0vx/web"
 	. "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
 )
 
 // InNumbers 数字展示容器模型
@@ -75,7 +75,7 @@ func RegisterInNumbersContainer(pb *pagebuilder.Builder) {
 			return
 		})
 		fb := pb.GetPresetsBuilder().NewFieldsBuilder(presets.WRITE).Model(&InNumbersItem{}).Only("Heading", "Text")
-		eb.Field("Items").Nested(fb, &presets.DisplayFieldInSorter{Field: "Heading"})
+		eb.Field("Items").Nested(fb).SorterField("Heading")
 	})
 }
 

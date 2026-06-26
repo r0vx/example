@@ -7,8 +7,8 @@ import (
 
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
-	"github.com/r0vx/web"
 	. "github.com/r0vx/htmlgo"
+	"github.com/r0vx/web"
 )
 
 // ListContent 列表内容容器模型
@@ -73,7 +73,7 @@ func RegisterListContentContainer(pb *pagebuilder.Builder) {
 			return presets.SelectField(obj, field, ctx).Items(StringsToOptions(LinkDisplayOptions))
 		})
 		fb := pb.GetPresetsBuilder().NewFieldsBuilder(presets.WRITE).Model(&ListItem{}).Only("Heading", "Text", "Link", "LinkText")
-		eb.Field("Items").Nested(fb, &presets.DisplayFieldInSorter{Field: "Heading"})
+		eb.Field("Items").Nested(fb).SorterField("Heading")
 	})
 }
 

@@ -165,8 +165,8 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 	// TextField1 - 使用 shadcn Input
 	ed.Field("TextField1").
 		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
-			return shadcn.Input().Label(field.Label).Attr(web.VField(field.Name, field.Value(obj))...).
-				ErrorMessages(field.Errors...).Tips("提示信息")
+			// presets.Bind 一次性套 Label/Disabled/Errors/VField；组件特有 Tips 先链好再传入。
+			return presets.Bind(field, obj, shadcn.Input().Tips("提示信息"))
 		})
 
 	// // TextArea1 - 使用 shadcn Textarea

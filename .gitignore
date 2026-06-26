@@ -25,3 +25,4 @@ ec.md
 .claude
 .codex
 *.swp
+.gstack/
