@@ -7,6 +7,7 @@ import (
 	"example/models"
 
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
 	"gorm.io/gorm"
@@ -89,6 +90,11 @@ func ConfigDataScopeDemo(b *presets.Builder, db *gorm.DB) {
 			}),
 			shadcn.DatetimeRangeFilterItem("created_at", "Created At"),
 		)
+	})
+	// SSE 实时刷新开关：放工具栏（「列设置」按钮前）。全局生效、localStorage 持久化。
+	// 关掉后他人改动不再推送刷新（自己的增删改仍刷新）；用于演示/测试时暂停实时刷新打扰。
+	lbA.ToolbarTrailing(func(ctx *web.EventContext) h.HTMLComponent {
+		return presets.SSERealtimeToggle("")
 	})
 
 	// 表B：按 user_id 隔离

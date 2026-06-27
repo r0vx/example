@@ -200,23 +200,30 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	// b.ExtraAsset("/shadcnx.js", "text/javascript", shadcn.JSComponentsPack())
 	// b.ExtraAsset("/shadcnx.css", "text/css", shadcn.CSSComponentsPack())
 
-	// 添加 codemirror 代码编辑器资源
-	b.ExtraAsset("/codemirror.js", "text/javascript", codemirror.JSComponentsPack())
+	// 添加 codemirror 代码编辑器资源（懒加载：744KB 重 chunk 改 LazyAsset，仅渲染 vue-codemirror 的页/抽屉首次用时加载；
+	// eager 微 stub 注册异步组件，CSS 保持 eager（小，保证样式）。即使在编辑抽屉 AJAX 也能解析）
+	b.LazyAsset("/codemirror.js", "text/javascript", codemirror.JSComponentsPack())
 	b.ExtraAsset("/codemirror.css", "text/css", codemirror.CSSComponentsPack())
+	b.ExtraAsset("/codemirror-stub.js", "text/javascript", codemirror.StubJSPack())
 
-	// 添加 tiptap 富文本编辑器资源
-	b.ExtraAsset("/tiptap.js", "text/javascript", tiptap.JSComponentsPack())
+	// 添加 tiptap 富文本编辑器资源（懒加载：437KB 重 chunk 改 LazyAsset，仅渲染 tiptap-editor 的页/抽屉首次用时加载；
+	// eager 微 stub 注册异步组件，CSS + MediaBox 桥接保持 eager。MediaBox bodyObserver 已支持懒渲染 wrapper 晚到）
+	b.LazyAsset("/tiptap.js", "text/javascript", tiptap.JSComponentsPack())
 	b.ExtraAsset("/tiptap.css", "text/css", tiptap.CSSComponentsPack())
-	// tiptap MediaBox 桥接脚本（在 tiptap.js 之后加载）
+	b.ExtraAsset("/tiptap-stub.js", "text/javascript", tiptap.StubJSPack())
+	// tiptap MediaBox 桥接脚本（DOM/事件驱动，独立于 tiptap.js 加载时机）
 	b.ExtraAsset("/tiptap-mediabox.js", "text/javascript", tiptapeditor.JSComponentsPack())
 	// 帮助中心 Summary AI 摘要 helper 脚本
 	b.ExtraAsset("/helpcenter-ai.js", "text/javascript", helpcenter.AIJSPack())
 
-	// 添加 unovis 数据可视化组件资源
-	b.ExtraAsset("/unovis.js", "text/javascript", unovis.JSComponentsPack())
-	b.ExtraAsset("/unovis.css", "text/css", unovis.CSSComponentsPack())
+	// 添加 unovis 数据可视化组件资源（懒加载：1.93MB 重 chunk + CSS 改 LazyAsset，eager 微 stub 把 6 个 unovis tag
+	// 注册为异步组件，首次渲染时按需加载。异步组件覆盖菜单 pushState 导航/抽屉/初始全部路径）
+	b.LazyAsset("/unovis.js", "text/javascript", unovis.JSComponentsPack())
+	b.LazyAsset("/unovis.css", "text/css", unovis.CSSComponentsPack())
+	b.ExtraAsset("/unovis-stub.js", "text/javascript", unovis.StubJSPack())
 
-	// 添加 Vue Flow 通用画布组件资源
+	// 添加 Vue Flow 通用画布组件资源（eager：@vue-flow/core 内部 provide/inject + store 对异步组件加载间隙敏感，
+	// 懒化后首次菜单 pushState 导航画布渲染失败；故保持 eager（323KB/页换正确性）。unovis 不受此限已懒化）
 	b.ExtraAsset("/vueflow.js", "text/javascript", vueflow.JSComponentsPack())
 	b.ExtraAsset("/vueflow.css", "text/css", vueflow.CSSComponentsPack())
 
@@ -637,6 +644,24 @@ func configMenuOrder(b *presets.Builder) {
 			"scope-org-doc",
 			"demo-cases",
 		).Icon("workflow"),
+		b.MenuGroup("Vue Flow").SubItems(
+			"vueflow-demo",         // 基础通用画布
+			"vueflow-dagre-demo",   // dagre 自动布局
+			"vueflow-status-demo",  // status 状态卡片
+			"vueflow-resizer-demo", // 节点缩放
+			"vueflow-toolbar-demo", // 节点工具栏
+			"vueflow-dnd-demo",      // 拖放建节点
+			"vueflow-edges-demo",    // 边类型/箭头
+			"vueflow-math-demo",     // 数学运算流
+			"vueflow-viewport-demo", // 视口/截图
+			"vueflow-teleport-demo", // 传送节点
+			"vueflow-dragaids-demo", // 拖拽辅助
+			"vueflow-conn-demo",     // 连线进阶
+			"record-graph",          // 记录关系图（ego 图）
+			"erd",                  // 数据模型图（ERD）
+			"rg-demo-users",        // RG 用户（关系图数据源）
+			"rg-demo-orders",       // RG 订单（关系图数据源）
+		).Icon("git-fork"),
 		b.MenuGroup("Shadcn UI").SubItems(
 			"shadcn-basic-inputs",
 			"shadcn-selections",
@@ -940,7 +965,7 @@ func configPost(
 			SyncFromFromKey: strings.TrimSuffix(field.FormKey, "WithSlug"),
 			InitialChecked:  autosync.InitialCheckedAuto,
 			CheckboxLabel:   "Auto Sync",
-			SyncCall:        autosync.SyncCallSlug,
+			SyncEndpoint:    autosync.SlugEndpointPath, // 服务端 slug（gosimple/slug），替代客户端 unidecode
 		}
 	})
 	m.Editing().Field("TitleWithSlug").LazyWrapComponentFunc(lazyWrapperEditCompoSync)

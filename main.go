@@ -25,8 +25,13 @@ func main() {
 	mux.Handle("/debug/", http.DefaultServeMux)
 	mux.Handle("/",
 		middleware.RequestID(
-			middleware.Logger(
-				middleware.Recoverer(h),
+			// gzip 压缩 HTML/JSON 响应（页面文档原本未压缩，登录页 120KB→~25KB）；
+			// 已设 Content-Encoding 的静态资源（assets/extra packs）自动跳过，不会双压。
+			// 注意：生产若有 K3s ingress gzip，此层冗余但无害。
+			middleware.Compress(5)(
+				middleware.Logger(
+					middleware.Recoverer(h),
+				),
 			),
 		),
 	)

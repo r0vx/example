@@ -8,6 +8,7 @@ import (
 	"example/admin/ui_demo"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/r0vx/admin/autosync"
 	"github.com/r0vx/x/login"
 	"github.com/r0vx/x/sitemap"
 	"gorm.io/gorm"
@@ -86,6 +87,9 @@ func Router(db *gorm.DB) http.Handler {
 	// 静态文件服务 - 服务 /system/ 路径下的媒体文件
 	// 文件存储在 ./public/ 目录下
 	mux.Handle("/system/", http.StripPrefix("/system/", http.FileServer(http.Dir("public/system"))))
+
+	// autosync 服务端 slug 端点（替代客户端 plaid().slug/unidecode，省 ~200KB corejs）
+	mux.Handle(autosync.SlugEndpointPath, autosync.SlugHandler())
 
 	// SEO示例
 	mux.Handle("/posts/first", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
