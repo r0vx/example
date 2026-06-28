@@ -148,6 +148,32 @@ func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 			RefreshInterval(2).
 			ColSpan(1),
 
+		// 自定义组件：独立 DataTable 测试（裸 shadcn.DataTable，不经 listing/portal）——
+		// 用于验证 DataTable 组件本身能否独立渲染（区别于列表里被 go-plaid-portal 包裹的场景）。
+		dashboard.Custom("datatable-test").
+			Body(func(ctx *web.EventContext) (h.HTMLComponent, error) {
+				rows := []map[string]any{
+					{"id": "1", "name": "张三", "email": "zhangsan@example.com", "role": "管理员", "status": "active"},
+					{"id": "2", "name": "李四", "email": "lisi@example.com", "role": "编辑", "status": "active"},
+					{"id": "3", "name": "王五", "email": "wangwu@example.com", "role": "访客", "status": "inactive"},
+					{"id": "4", "name": "赵六", "email": "zhaoliu@example.com", "role": "编辑", "status": "active"},
+					{"id": "5", "name": "孙七", "email": "sunqi@example.com", "role": "管理员", "status": "active"},
+				}
+				cols := []shadcn.DataTableColumn{
+					{Name: "name", Title: "姓名", Sortable: true},
+					{Name: "email", Title: "邮箱", Sortable: true},
+					{Name: "role", Title: "角色"},
+					{Name: "status", Title: "状态"},
+				}
+				return shadcn.Card(
+					shadcn.CardHeader(shadcn.CardTitle(h.Text("DataTable 独立测试"))),
+					shadcn.CardContent(
+						shadcn.DataTable().Data(rows).Columns(cols).Hover(true),
+					),
+				), nil
+			}).
+			ColSpan(3),
+
 		// 自定义组件：公告
 		dashboard.Custom("announcement").
 			Body(func(ctx *web.EventContext) (h.HTMLComponent, error) {
