@@ -185,6 +185,13 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	if u := os.Getenv("PANIC_WEBHOOK_URL"); u != "" {
 		b.PanicNotifier(presets.WebhookPanicNotifier(u))
 	}
+	// 移动端底部 Tab 栏：首页 / 订单 / 菜单 / 我的（菜单项 URL 空 → 点击切换侧栏 Sheet）
+	b.BottomNav(
+		presets.BottomNavItem{Icon: "home", URL: "/"},
+		presets.BottomNavItem{Icon: "shopping-cart", URL: "/orders"},
+		presets.BottomNavItem{Icon: "menu"},
+		presets.BottomNavItem{Icon: "user", URL: "/profile"},
+	)
 	// 数据隔离全局 resolver：非 admin 只看自己的数据，admin 看全部。
 	// ownerValue 用 string（匹配 activity.ActivityLog.UserID 的 string 列）。
 	b.DataScopeResolver(func(ctx *web.EventContext) (any, bool) {
@@ -407,8 +414,8 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	chart_demo.ConfigNetworkGraphDemo(b, db)
 	chart_demo.ConfigScatterPlotDemo(b, db)
 	chart_demo.ConfigTreemapDemo(b, db)
+	chart_demo.ConfigChartRealtimeDemo(b) // 实时图表范式对比（RefreshInterval 定时刷新族：A/B/环形）
 
-	crud_demo.ConfigOrder(b, db)
 	crud_demo.ConfigProject(b, db)
 	ec_demo.ConfigECDashboard(b, db)
 	ec_demo.ConfigureDemoCase(b, db)
@@ -423,6 +430,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	ui_demo.ConfigEditingActionsDemo(b, db)
 	ui_demo.ConfigRowRefreshDemo(b, db)
 	ui_demo.ConfigRelayPaginationDemo(b, db)
+	ui_demo.ConfigPermResourceEventDemo(b, db) // 自定义权限资源 + 裸事件鉴权演示
 	wizard_demo.ConfigWizardDemo(b, db)
 	wizard_demo.ConfigWizardDeclarativeDemo(b, db)
 	wizard_demo.ConfigWizardFullPageDemo(b, db)
@@ -440,6 +448,8 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	)
 	b.SSEHub(sseHub)
 
+	crud_demo.ConfigOrder(b, db, sseHub)        // orders 列表实时刷新需 hub 广播，故移到 hub 创建之后
+	chart_demo.ConfigStreamChartDemo(b, sseHub) // 滚动流图表 demo（StreamOn 追加流：SSE 推点+客户端追加，需 hub）
 	ui_demo.ConfigNotificationDemo(b, db, sseHub)
 	ui_demo.ConfigActionEnhanceDemo(b, db, sseHub)
 	ui_demo.ConfigDisableRowClickDemo(b, db)
@@ -563,10 +573,10 @@ func configMenuOrder(b *presets.Builder) {
 			"membership-cards",
 		).Icon("shopping-cart"),
 		b.MenuGroup("Content").SubItems(
-			"posts",            // Post → 文章
-			"articles",         // helpcenter Article → 帮助文档
-			"seo-settings",     // seo SEOSetting → SEO 管理
-			"micro-sites",      // microsite MicroSite → 微站点
+			"posts",        // Post → 文章
+			"articles",     // helpcenter Article → 帮助文档
+			"seo-settings", // seo SEOSetting → SEO 管理
+			"micro-sites",  // microsite MicroSite → 微站点
 		).Icon("file-text"),
 		b.MenuGroup("Project Management").SubItems(
 			"projects",
@@ -593,6 +603,8 @@ func configMenuOrder(b *presets.Builder) {
 			"scatter-plot-demo",
 			"treemap-demo",
 			"shadcn-chart",
+			"chart-realtime-demo", // 定时刷新族（RefreshInterval：A/B/环形）
+			"stream-chart-demo",   // 追加流（StreamOn：SSE 推点+客户端追加左滑）
 		).Icon("bar-chart"),
 	)
 
@@ -634,7 +646,11 @@ func configMenuOrder(b *presets.Builder) {
 			"action-enhance-demo",
 			"dialog-demos",
 			"notif-demos",
+			"notification-demo", // SSE Toast 通知页
 			"avatar-upload-demo",
+			"sc-member-demo",        // 非 ID 主键
+			"row-refresh-demo",      // 行级局部刷新
+			"relay-pagination-demo", // relay 游标分页
 		).Icon("table"),
 		b.MenuGroup("Workflow & Scope").SubItems(
 			"wizard-demos",
@@ -642,14 +658,15 @@ func configMenuOrder(b *presets.Builder) {
 			"scope-agent-deal",
 			"scope-user-note",
 			"scope-org-doc",
+			"perm-resource-event-demo", // 自定义权限资源 + 裸事件鉴权
 			"demo-cases",
 		).Icon("workflow"),
 		b.MenuGroup("Vue Flow").SubItems(
-			"vueflow-demo",         // 基础通用画布
-			"vueflow-dagre-demo",   // dagre 自动布局
-			"vueflow-status-demo",  // status 状态卡片
-			"vueflow-resizer-demo", // 节点缩放
-			"vueflow-toolbar-demo", // 节点工具栏
+			"vueflow-demo",          // 基础通用画布
+			"vueflow-dagre-demo",    // dagre 自动布局
+			"vueflow-status-demo",   // status 状态卡片
+			"vueflow-resizer-demo",  // 节点缩放
+			"vueflow-toolbar-demo",  // 节点工具栏
 			"vueflow-dnd-demo",      // 拖放建节点
 			"vueflow-edges-demo",    // 边类型/箭头
 			"vueflow-math-demo",     // 数学运算流
@@ -658,9 +675,9 @@ func configMenuOrder(b *presets.Builder) {
 			"vueflow-dragaids-demo", // 拖拽辅助
 			"vueflow-conn-demo",     // 连线进阶
 			"record-graph",          // 记录关系图（ego 图）
-			"erd",                  // 数据模型图（ERD）
-			"rg-demo-users",        // RG 用户（关系图数据源）
-			"rg-demo-orders",       // RG 订单（关系图数据源）
+			"erd",                   // 数据模型图（ERD）
+			"rg-demo-users",         // RG 用户（关系图数据源）
+			"rg-demo-orders",        // RG 订单（关系图数据源）
 		).Icon("git-fork"),
 		b.MenuGroup("Shadcn UI").SubItems(
 			"shadcn-basic-inputs",
@@ -686,7 +703,7 @@ func configMenuOrder(b *presets.Builder) {
 			"shadcn-tree-view",
 			"shadcn-cascader",
 			"shadcn-timeline",
-			"shadcn-chart",
+			// shadcn-chart 已归入 Analytics / Charts 组（图表 demo 集中管理），此处不再重复
 			"shadcn-admin-demo",
 		).Icon("component"),
 	)

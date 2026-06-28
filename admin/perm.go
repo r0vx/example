@@ -29,7 +29,7 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 			// ⚠️ 要让此 demo 可验证：还需在 roles 后台（或 models.DefaultRoles）建同名角色并分配给测试用户。
 			perm.PolicyFor("ProductManager").WhoAre(perm.Allowed).ToDo(perm.Anything).On("*:products:*"),
 			perm.PolicyFor("UserManager").WhoAre(perm.Allowed).ToDo(perm.Anything).On("*:users:*"),
-			perm.PolicyFor(perm.Anybody).WhoAre(perm.Denied).ToDo(presets.PermCreate).On("*:orders:*"),
+			//perm.PolicyFor(perm.Anybody).WhoAre(perm.Denied).ToDo(presets.PermCreate).On("*:orders:*"),
 			perm.PolicyFor(
 				models.RoleViewer,
 				models.RoleEditor,

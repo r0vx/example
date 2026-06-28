@@ -29,7 +29,7 @@ func ConfigTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 	seedDepartments(db)
 
 	mb := b.Model(&Department{}).URIName("tree-listing-demo")
-	lb := mb.Listing("ID", "Name", "Code").PerPage(1)
+	lb := mb.Listing("ID", "Name", "Code")
 	// ExpandInActions(true)：展开按钮放行尾 action 列（默认在第一列跟随缩进，删掉该调用即恢复）
 	lb.TreeMode(presets.Tree("ParentID").ExpandInActions(true))
 	lb.SearchColumns("name", "code")
