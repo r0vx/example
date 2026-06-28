@@ -2,6 +2,7 @@ package crud_demo
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/iancoleman/strcase"
@@ -80,9 +81,10 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 	// 没有订单事件就不动——无定时器、无轮询（与表格行级刷新解耦、各自更新、互不闪屏）。
 	base := b.Info().ListingHref()
 	refreshEvents := []string{b.NotifModelsUpdated(), b.NotifModelsCreated(), b.NotifModelsDeleted()}
-	// PageHeaderFunc（非 ContentHeaderFunc）：图表渲染在 compo 之外，表格增删改 reload 不重渲它们 →
-	// 图表只靠 RefreshOn 的 :data 平滑更新（丝滑，像 chart-realtime-demo），不再随整表 reload 重挂闪烁。
-	lb.PageHeaderFunc(orderStatusChartHeader(db,
+	// ContentHeaderFunc：图表渲染在 Tab 栏下方、筛选器上方（正确位置）。配合 RowLevelRefresh：
+	// 编辑=行级补丁、新增/删除=只刷表格 portal —— 整个 compo 都不重渲，故图表（在 ContentHeader）保持挂载、不闪，
+	// 只靠 RefreshOn 的 :data 平滑更新。Tab/筛选栏同样不受刷新影响。
+	lb.ContentHeaderFunc(orderStatusChartHeader(db,
 		base+"?__execute_event__="+evStatusData,
 		base+"?__execute_event__="+evDailyData,
 		base+"?__execute_event__="+evSlidingData,
@@ -122,6 +124,18 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 				SQLCondition: `status %s ?`,
 				Options:      statusOptions,
 			},
+		}
+	})
+
+	// 快捷筛选 Tab（按状态）：Query 对接 status MultipleSelect 筛选项，格式 `status.in=值`（逗号分隔多值）。
+	// 用于测试：切 Tab / 增删订单触发表格 portal 刷新时，Tab 栏与筛选栏保持挂载、不重渲、不闪。
+	lb.FilterTabsFunc(func(ctx *web.EventContext) []*presets.FilterTab {
+		return []*presets.FilterTab{
+			{ID: "all", Label: "全部", Query: url.Values{"all": []string{"1"}}},
+			{ID: "pending", Label: "待处理", Query: url.Values{"status.in": []string{string(models.OrderStatus_Pending)}}},
+			{ID: "paid", Label: "已支付", Query: url.Values{"status.in": []string{string(models.OrderStatus_Paid)}}},
+			{ID: "sending", Label: "配送中", Query: url.Values{"status.in": []string{string(models.OrderStatus_Sending)}}},
+			{ID: "cancelled", Label: "已取消", Query: url.Values{"status.in": []string{string(models.OrderStatus_Cancelled)}}},
 		}
 	})
 
