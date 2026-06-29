@@ -13,8 +13,10 @@ import (
 	"github.com/r0vx/admin/publish"
 
 	"github.com/r0vx/admin/presets"
+	"github.com/r0vx/admin/presets/gorm2op"
 	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
+	"github.com/r0vx/x/perm"
 	"gorm.io/gorm"
 )
 
@@ -25,6 +27,16 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 
 	lb := mb.Listing("ID", "Name", "Account", "Company", "Status", "Roles", "UpdatedAt").
 		SearchColumns("name", "account")
+
+	// Roles 是 m2m（User.Roles []perm.Role gorm:"many2many"），默认查询不带关联 → 列表角色列空。
+	// 经 gorm2op hook 给列表查询注入 Preload("Roles")，使每行 user.GetRoles() 有值。
+	lb.WrapSearchFunc(func(in presets.SearchFunc) presets.SearchFunc {
+		return func(ctx *web.EventContext, params *presets.SearchParams) (*presets.SearchResult, error) {
+			return in(gorm2op.EventContextWithHook(ctx, func(db *gorm.DB) *gorm.DB {
+				return db.Preload("Roles")
+			}), params)
+		}
+	})
 
 	rmb := lb.RowMenu().InlineDefaultsInMenu(true)
 
@@ -93,6 +105,13 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 		return
 	})
 
+	// loadUserRoles 把 m2m Roles 关联加载进 *User（Fetch 不走 gorm2op 的 preload hook，须手动）。
+	loadUserRoles := func(obj any) {
+		if u, ok := obj.(*models.User); ok && u.ID != 0 {
+			_ = db.Model(u).Association("Roles").Find(&u.Roles)
+		}
+	}
+
 	eb := mb.Editing()
 	eb.Field("Roles").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		user := obj.(*models.User)
@@ -105,6 +124,51 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 			Attr(web.VField(field.FormKey, currentRoles)...).
 			Multiple(true).
 			ErrorMessages(field.Errors...)
+	}).SetterFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) error {
+		// 显式清空 Roles：presets 会先批量 reflectutils unmarshal 整个 form，把 "Manager" 塞进
+		// []perm.Role 得到一个零值 Role；若不清掉，主 Save 的 Select("*").Updates 会连带 upsert 该零值
+		// （INSERT roles name=''、user_role_join role_id=0）→ 外键违例。真正的 m2m 写入在 WrapSaveFunc。
+		if u, ok := obj.(*models.User); ok {
+			u.Roles = nil
+		}
+		return nil
+	})
+
+	// 编辑/新建打开表单时把当前角色加载进来，供 ComponentFunc 回显已选。
+	eb.WrapFetchFunc(func(in presets.FetchFunc) presets.FetchFunc {
+		return func(obj any, id string, ctx *web.EventContext) (any, error) {
+			r, err := in(obj, id, ctx)
+			if err == nil {
+				loadUserRoles(r)
+			}
+			return r, err
+		}
+	})
+
+	// 保存后用表单提交的角色名重置 m2m 关联（角色名 → perm.Role → Association.Replace）。
+	eb.WrapSaveFunc(func(in presets.SaveFunc) presets.SaveFunc {
+		return func(obj any, id string, ctx *web.EventContext) error {
+			_ = ctx.R.ParseForm()
+			names := ctx.R.Form["Roles"] // 须在 in() 前取（multipart 表单值）
+			// 清空 obj.Roles 再存：杜绝主 Save 误 upsert 零值/旧关联（role_id=0 外键违例）；m2m 全交给下方 Replace。
+			if u, ok := obj.(*models.User); ok {
+				u.Roles = nil
+			}
+			if err := in(obj, id, ctx); err != nil {
+				return err
+			}
+			u, ok := obj.(*models.User)
+			if !ok {
+				return nil
+			}
+			var roles []perm.Role
+			if len(names) > 0 {
+				if err := db.Where("name IN ?", names).Find(&roles).Error; err != nil {
+					return err
+				}
+			}
+			return db.Model(u).Association("Roles").Replace(roles)
+		}
 	})
 
 	dp := mb.Detailing(
@@ -113,6 +177,17 @@ func ConfigUser(b *presets.Builder, ab *activity.Builder, db *gorm.DB, publisher
 			Rows:  [][]string{{"ID", "Name"}, {"Company", "Status"}, {"Account"}, {"Roles"}, {"RegistrationDate"}},
 		},
 	).Drawer(true)
+
+	// 详情页同样需手动加载 m2m Roles（Fetch 不走 preload hook）。
+	dp.WrapFetchFunc(func(in presets.FetchFunc) presets.FetchFunc {
+		return func(obj any, id string, ctx *web.EventContext) (any, error) {
+			r, err := in(obj, id, ctx)
+			if err == nil {
+				loadUserRoles(r)
+			}
+			return r, err
+		}
+	})
 
 	dp.Field("Roles").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		user := obj.(*models.User)
