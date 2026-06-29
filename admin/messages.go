@@ -129,6 +129,12 @@ type Messages_ModelsI18nModuleKey struct {
 	Post           string
 	PostsBodyImage string
 
+	// products 字段级 i18n（导出选列 / 表头 / CSV 表头共用，key = ToCamel(模型label+" "+字段label)）
+	ProductsCode  string
+	ProductsName  string
+	ProductsPrice string
+	ProductsImage string
+
 	SeoPost             string
 	SeoVariableTitle    string
 	SeoVariableSiteName string
@@ -317,6 +323,12 @@ var Messages_zh_CN_ModelsI18nModuleKey = &Messages_ModelsI18nModuleKey{
 	Settings:       "SEO 设置",
 	Post:           "帖子",
 	PostsBodyImage: "内容图片",
+
+	// products 字段级 i18n（导出选列演示）
+	ProductsCode:  "编码",
+	ProductsName:  "名称",
+	ProductsPrice: "价格",
+	ProductsImage: "图片",
 
 	SeoPost:             "帖子",
 	SeoVariableTitle:    "标题",
