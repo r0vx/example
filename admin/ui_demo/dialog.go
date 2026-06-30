@@ -120,7 +120,20 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 					Label(field.Label).
 					Attr(web.VField(field.FormKey, field.Value(obj))...).
 					Disabled(true),
+				// 旧法：单建 InMenu(false) 的 selector 模型 + WrapCell 手挂行点击
 				dialogDemoListingDialogTrigger(),
+				// 新法（B）：OpenListing 按次配置——直接弹本模型列表，无需 selector 模型；
+				// 尺寸/列/行菜单/选中回调全在调用点声明。OnSelectRow 里 $event.id=选中行 ID，
+				// 这里复用既有 eventSelectDialogDemo 服务端事件（弹提示并关闭弹窗）。
+				presets.OpenListing(mb).
+					Size(presets.DialogSizeMd).
+					Columns("ID", "Title", "Status").
+					HideRowMenu().
+					HideNewButton().
+					SearchOff().
+					OnSelectRow(web.Plaid().EventFunc(eventSelectDialogDemo).Query("id", web.Var("$event.id")).Go()).
+					Button(h.Text("选择关联记录（OpenListing 按次配置）")).
+					Variant(shadcn.ButtonVariantSecondary),
 			).Class("flex flex-col gap-2")
 		})
 
