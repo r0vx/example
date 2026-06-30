@@ -123,15 +123,15 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 				// 旧法：单建 InMenu(false) 的 selector 模型 + WrapCell 手挂行点击
 				dialogDemoListingDialogTrigger(),
 				// 新法（B）：OpenListing 按次配置——直接弹本模型列表，无需 selector 模型；
-				// 尺寸/列/行菜单/选中回调全在调用点声明。OnSelectRow 里 $event.id=选中行 ID，
-				// 这里复用既有 eventSelectDialogDemo 服务端事件（弹提示并关闭弹窗）。
+				// 尺寸/列/行菜单/选中事件全在调用点声明。OnSelectEvent 传已注册事件名，框架按固定
+				// 模板构建行点击调用（id=$event.id），复用既有 eventSelectDialogDemo（弹提示并关弹窗）。
 				presets.OpenListing(mb).
 					Size(presets.DialogSizeMd).
 					Columns("ID", "Title", "Status").
 					HideRowMenu().
 					HideNewButton().
 					SearchOff().
-					OnSelectRow(web.Plaid().EventFunc(eventSelectDialogDemo).Query("id", web.Var("$event.id")).Go()).
+					OnSelectEvent(eventSelectDialogDemo).
 					Button(h.Text("选择关联记录（OpenListing 按次配置）")).
 					Variant(shadcn.ButtonVariantSecondary),
 			).Class("flex flex-col gap-2")
@@ -160,26 +160,24 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 				Key:          "status",
 				Label:        "Status",
 				ItemType:     shadcn.FilterItemTypeSelect,
-				SQLCondition: `users.status %s ?`,
+				SQLCondition: `status %s ?`,
 				Options: []shadcn.FilterSelectOption{
 					{Text: "Active", Value: "active"},
+					{Text: "Pending", Value: "pending"},
 					{Text: "Inactive", Value: "inactive"},
 				},
 			},
 			{
-				Key:          "registration_date",
-				Label:        "Registration Date",
-				ItemType:     shadcn.FilterItemTypeDatePicker,
-				SQLCondition: `users.registration_date %s ?`,
-				Folded:       true,
+				Key:          "priority",
+				Label:        "Priority",
+				ItemType:     shadcn.FilterItemTypeSelect,
+				SQLCondition: `priority %s ?`,
+				Options: []shadcn.FilterSelectOption{
+					{Text: "1 - 最低", Value: "1"},
+					{Text: "3 - 中", Value: "3"},
+					{Text: "5 - 最高", Value: "5"},
+				},
 			},
-			// {
-			// 	Key:          "registration_date_range",
-			// 	Label:        "Registration Date Range",
-			// 	ItemType:     shadcn.FilterItemTypeDateRangePicker,
-			// 	SQLCondition: `users.registration_date %s ?`,
-			// 	Folded:       true,
-			// },
 		}
 	})
 
@@ -197,6 +195,29 @@ func ConfigDialogDemo(b *presets.Builder, db *gorm.DB) {
 			variant = shadcn.BadgeVariantOutline
 		}
 		return h.Td(shadcn.Badge(h.Text(demo.Status)).Variant(variant))
+	})
+
+	// ────────────────────────────────────────────────────────
+	// 在「列表行内」打开 ListingDialog（按本行值预过滤）
+	// ────────────────────────────────────────────────────────
+	//
+	// 对标「点某行的某字段 → 弹出按该行值过滤的子列表」（如点 UserAgentID → 弹该 UA 的访问统计）。
+	// 关键：@click.stop 阻止冒泡到行点击（否则会同时触发行编辑）；Filter(key,val) 预设筛选（key
+	// 须是 FilterDataFunc 注册项）；这里演示打开 DialogDemos 自身、按本行 Status 过滤。
+	lb.Field("RelatedID").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+		demo := obj.(*models.DialogDemo)
+		return h.Div(
+			h.Span(fmt.Sprint(demo.RelatedID)).Class("text-xs text-muted-foreground tabular-nums"),
+			shadcn.Button(h.Text("同状态")).
+				Variant(shadcn.ButtonVariantOutline).
+				Size(shadcn.ButtonSizeSm).
+				Attr("@click.stop", presets.OpenListing(mb).
+					Size(presets.DialogSizeLg).
+					Columns("ID", "Title", "Status", "Priority").
+					HideRowMenu().HideNewButton().
+					Filter("status", demo.Status). // 按本行状态预过滤
+					Go()),
+		).Class("flex items-center gap-2")
 	})
 
 	// ────────────────────────────────────────────────────────
