@@ -31,6 +31,25 @@ import (
 	"gorm.io/gorm"
 )
 
+// cityMemoKey 私有 ctx key，避免与其它 ContextValue 碰撞
+type cityMemoKey struct{}
+
+// cityTextForRequest 每请求 memo：首次查全表建 id→name 映射并缓存到 ctx，
+// 同请求内各列表行复用（列表显示实时 + 无 N+1）。
+func cityTextForRequest(db *gorm.DB, ctx *web.EventContext) map[string]string {
+	if v, ok := ctx.ContextValue(cityMemoKey{}).(map[string]string); ok {
+		return v
+	}
+	m := map[string]string{}
+	var cs []models.City
+	db.Find(&cs)
+	for _, c := range cs {
+		m[fmt.Sprint(c.ID)] = c.Name
+	}
+	ctx.WithContextValue(cityMemoKey{}, m)
+	return m
+}
+
 func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *worker.Builder) {
 	inputDemo := b.Model(&models.InputDemo{})
 	// MenuIcon("view_quilt")
@@ -38,23 +57,6 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 	defer func() {
 		ab.RegisterModel(inputDemo)
 	}()
-
-	// 注册 Switch 切换事件
-	b.GetWebBuilder().RegisterEventFunc("eventToggleSwitch", func(ctx *web.EventContext) (r web.EventResponse, err error) {
-		id := ctx.R.FormValue("id")
-		var demo models.InputDemo
-		if err = db.First(&demo, id).Error; err != nil {
-			presets.ShowMessage(&r, err.Error(), "error")
-			return
-		}
-		demo.Switch1 = !demo.Switch1
-		if err = db.Save(&demo).Error; err != nil {
-			presets.ShowMessage(&r, err.Error(), "error")
-			return
-		}
-		presets.ShowMessage(&r, "状态已更新", "success")
-		return
-	})
 
 	// 列表配置
 	cl := inputDemo.Listing("ID", "Switch1", "Slider1", "Select1", "UpdatedAt").
@@ -64,29 +66,54 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 
 	cl.OrderableFields("Slider1", "UpdatedAt")
 
-	// ID 列 - 固定列宽 60px
-	cl.Field("ID").CellClass("w-[60px]")
+	// TimeFormat 演示：本列表所有时间列（UpdatedAt）按短格式显示（默认是 2006-01-02 15:04:05）
+	cl.TimeFormat("06/01/02 15:04")
 
-	// Switch1 列表字段 - 带事件的开关，固定列宽 80px
-	cl.Field("Switch1").
-		CellClass("w-[80px]").
-		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
-			info := obj.(*models.InputDemo)
-			onclick := web.Plaid().
-				EventFunc("eventToggleSwitch").
-				Query("id", fmt.Sprint(info.ID)).Go()
-			return shadcn.Switch().
-				Checked(info.Switch1).
-				Disabled(field.Disabled).
-				OnChange(onclick).
-				Attr("@click.stop", true)
-		})
+	// ID 列 - 固定列宽 60px
+	cl.Field("ID").Class("w-[60px]")
+
+	// Switch1 列表字段 - 内联开关（新 API：.Switch() 内置写，经 Editing.Fetcher/Saver 收口；成功自动弹 i18n「状态已更新」）
+	// 需删缓存/弹窗等副作用时链 .After(func(obj, id, ctx, r) error {...})
+	cl.Field("Switch1").Class("w-[80px]").Switch()
 
 	// Slider1 列使用 Progress 进度条展示
 	cl.Field("Slider1").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
 		info := obj.(*models.InputDemo)
 		return shadcn.Progress().ModelValue(info.Slider1)
 	})
+
+	// presets bundle 演示（DB 驱动）：Select1 用一个 bundle 同时管「列表显示 + 编辑」，.Use 按 mode 分派。
+	// City 参考表：Select1 存 City.ID；编辑下拉来自表，列表按 ID 查表显示 City.Name（每请求 memo，无 N+1）。
+	// 迁移 + 幂等 seed（ID 1/2/3 对齐存量 Select1 值）。
+	_ = db.AutoMigrate(&models.City{})
+	var cityCnt int64
+	db.Model(&models.City{}).Count(&cityCnt)
+	if cityCnt == 0 {
+		db.Create(&[]models.City{{ID: 1, Name: "Tokyo"}, {ID: 2, Name: "Canberra"}, {ID: 3, Name: "Hangzhou"}})
+	}
+	select1Field := presets.NewField().
+		// 列表：实时 memo——每请求查一次 City 表、缓存到 ctx，各行复用（实时 + 无 N+1）。
+		// 用带 ctx 的 .Cell（Format 丢 ctx，做不了按请求 memo）。
+		Cell(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+			if t, ok := cityTextForRequest(db, ctx)[field.StringValue(obj)]; ok {
+				return h.Text("▶ " + t)
+			}
+			return h.Text("—")
+		}).
+		Edit(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
+			var cs []models.City
+			db.Find(&cs) // DB 驱动选项：每次开表单查一次（下拉始终最新）
+			items := make([]shadcn.DefaultOptionItem, 0, len(cs))
+			for _, c := range cs {
+				items = append(items, shadcn.DefaultOptionItem{Text: c.Name, Value: fmt.Sprint(c.ID)})
+			}
+			return shadcn.Select().
+				Items(items).
+				Placeholder("选择城市").
+				Label(field.Label).
+				Attr(web.VField(field.Name, field.Value(obj))...).ErrorMessages(field.Errors...)
+		})
+	cl.Field("Select1").Use(select1Field) // 列表：走 bundle 的 Cell（按请求 memo 查表 → ▶城市名）
 
 	// 快捷筛选标签
 	cl.FilterTabsFunc(func(ctx *web.EventContext) []*presets.FilterTab {
@@ -189,38 +216,8 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 			return shadcn.Slider().Label(field.Label).ModelValue(val).Disabled(field.Disabled).Attr(web.VField(field.Name, val)...).ErrorMessages(field.Errors...)
 		})
 
-	// Select1 - 使用 shadcn Select
-	ed.Field("Select1").
-		ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) h.HTMLComponent {
-			// val, _ := field.Value(obj).(string)
-
-			var items = []shadcn.DefaultOptionItem{}
-
-			items = append(items, shadcn.DefaultOptionItem{
-				Text:  "Tokyo",
-				Value: "1",
-			})
-			items = append(items, shadcn.DefaultOptionItem{
-				Text:  "Canberra",
-				Value: "2",
-			})
-			items = append(items, shadcn.DefaultOptionItem{
-				Text:  "Hangzhou",
-				Value: "3",
-			})
-
-			return shadcn.Select().
-				Items(items).
-				Placeholder("选择城市"). // 通过方法设置
-				Label(field.Label).
-				Attr(web.VField(field.Name, field.Value(obj))...).ErrorMessages(field.Errors...)
-
-			// return shadcn.Select(
-			// 	shadcn.SelectTrigger(
-			// 		shadcn.SelectValue().Placeholder("Select a city2"),
-			// 	),
-			// ).Items(items).Label(field.Label).Attr(web.VField(field.Name, val)...).ErrorMessages(field.Errors...)
-		})
+	// Select1 - 与列表同一个 bundle：编辑走其 Edit（Select）；一处定义、list/edit 共用
+	ed.Field("Select1").Use(select1Field)
 
 	// Radio1 - 使用 shadcn RadioGroup
 	ed.Field("Radio1").
@@ -433,7 +430,7 @@ func ConfigInputDemo(b *presets.Builder, db *gorm.DB, ab *activity.Builder, wb *
 			return codemirror.CodeMirror().
 				Label(field.Label).
 				ModelValue(val).
-				Language(codemirror.LangText).
+				Language(codemirror.LangJSON).
 				Theme(codemirror.ThemeDark).
 				Height("300px").
 				Placeholder("请输入...").

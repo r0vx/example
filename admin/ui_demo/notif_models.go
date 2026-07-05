@@ -72,7 +72,10 @@ func ConfigNotifDemo(b *presets.Builder, db *gorm.DB) {
 	//
 	// 总结：只要正常配置 Listing + Editing，列表就会自动刷新，无需任何额外代码。
 
-	mb.Listing("ID", "Title", "Status", "UpdatedAt").SearchColumns("title")
+	lb := mb.Listing("ID", "Title", "Status", "UpdatedAt").SearchColumns("title")
+
+	lb.RowLevelRefresh(true) // ← 被测开关
+
 	mb.Editing("Title", "Status")
 
 	// ================================================================

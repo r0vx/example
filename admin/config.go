@@ -185,13 +185,8 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	if u := os.Getenv("PANIC_WEBHOOK_URL"); u != "" {
 		b.PanicNotifier(presets.WebhookPanicNotifier(u))
 	}
-	// 移动端底部 Tab 栏：首页 / 订单 / 菜单 / 我的（菜单项 URL 空 → 点击切换侧栏 Sheet）
-	b.BottomNav(
-		presets.BottomNavItem{Icon: "home", URL: "/"},
-		presets.BottomNavItem{Icon: "shopping-cart", URL: "/orders"},
-		presets.BottomNavItem{Icon: "menu"},
-		presets.BottomNavItem{Icon: "user", URL: "/profile"},
-	)
+	// 移动端底部 Tab 栏：已移除（移动端适配不佳，改用侧栏抽屉导航）。
+	// 需要时用 b.BottomNav(presets.BottomNavItem{...}) 重新开启。
 	// 数据隔离全局 resolver：非 admin 只看自己的数据，admin 看全部。
 	// ownerValue 用 string（匹配 activity.ActivityLog.UserID 的 string 列）。
 	b.DataScopeResolver(func(ctx *web.EventContext) (any, bool) {

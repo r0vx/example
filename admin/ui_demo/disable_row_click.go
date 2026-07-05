@@ -57,7 +57,7 @@ func ConfigDisableRowClickDemo(b *presets.Builder, db *gorm.DB) {
 	// 列宽演示（Field 挂在 ListingBuilder 上）
 	lb.Field("ID").ColumnWidth("w-16")                                  // 64px
 	lb.Field("Name").ColumnWidth("w-48")                                // 192px
-	lb.Field("Phone").HeaderClass("text-center").CellClass("font-mono") // 表头居中 + 单元格等宽字体
+	lb.Field("Phone").HeaderClass("text-center").Class("font-mono") // 表头居中 + 单元格等宽字体
 	lb.Field("Industry").ColumnWidth("w-32")                            // 128px
 	lb.Field("Status").ColumnWidth("w-24")                              // 96px
 	lb.Field("UpdatedAt").ColumnWidth("w-44")                           // 176px

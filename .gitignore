@@ -26,3 +26,7 @@ ec.md
 .codex
 *.swp
 .gstack/
+
+# go.work: 本地引本地模块开发用，不提交
+go.work
+go.work.sum
