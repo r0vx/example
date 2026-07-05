@@ -187,6 +187,8 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	}
 	// 移动端底部 Tab 栏：已移除（移动端适配不佳，改用侧栏抽屉导航）。
 	// 需要时用 b.BottomNav(presets.BottomNavItem{...}) 重新开启。
+	// 全局搜索默认目标页：在不可搜索页（如 dashboard）输入搜索、确定后自动跳 orders 搜订单。
+	b.GlobalSearchDefaultURL("/orders")
 	// 数据隔离全局 resolver：非 admin 只看自己的数据，admin 看全部。
 	// ownerValue 用 string（匹配 activity.ActivityLog.UserID 的 string 列）。
 	b.DataScopeResolver(func(ctx *web.EventContext) (any, bool) {
