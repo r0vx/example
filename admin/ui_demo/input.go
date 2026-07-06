@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"strings"
 	"time"
@@ -42,7 +43,10 @@ func cityTextForRequest(db *gorm.DB, ctx *web.EventContext) map[string]string {
 	}
 	m := map[string]string{}
 	var cs []models.City
-	db.Find(&cs)
+	if err := db.Find(&cs).Error; err != nil {
+		log.Printf("cityTextForRequest: 查 City 失败: %v", err) // 出错不缓存空 map（下次请求重试），别静默把整列显示成 —
+		return m
+	}
 	for _, c := range cs {
 		m[fmt.Sprint(c.ID)] = c.Name
 	}
