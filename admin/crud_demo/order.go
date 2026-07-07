@@ -139,6 +139,20 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 		}
 	})
 
+	// 手动刷新按钮（参考 payManage）：静音（SSE 实时关）或想立即拉新时点一下。
+	// 走 handReload 发 NotifModelsCreated → 复用 SSE 同款就地重载链路：RowLevelRefresh 下只重渲
+	// 表格区 portal（按当前筛选/搜索/翻页 locals 重查），图表监听同键平滑重取 —— 不整页 reload、
+	// 不丢筛选、Tab/筛选栏 DOM 保持挂载不闪。
+	lb.Action("Reload").ButtonCompFunc(func(ctx *web.EventContext) h.HTMLComponent {
+		return shadcn.Button(shadcn.Icon("refresh-cw").Size(16).Class("mr-1"), h.Text("刷新")).
+			Variant(shadcn.ButtonVariantOutline).Size(shadcn.ButtonSizeSm).
+			Attr("@click", web.Plaid().EventFunc("handReload").Go())
+	})
+	b.RegisterEventFunc("handReload", func(ctx *web.EventContext) (r web.EventResponse, err error) {
+		r.Emit(b.NotifModelsCreated())
+		return
+	})
+
 	// detailing
 	b.Detailing(
 		&presets.FieldsSection{
