@@ -30,3 +30,6 @@ ec.md
 # go.work: 本地引本地模块开发用，不提交
 go.work
 go.work.sum
+
+# VS Code delve 调试残留二进制
+__debug_bin*
