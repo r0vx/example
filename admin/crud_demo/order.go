@@ -49,13 +49,23 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 	seedOrders(db) // 演示数据：近 7 天订单，供图表与实时刷新演示
 	b := pb.Model(&models.Order{}).URIName("orders")
 
-	lb := b.Listing("ID", "CreatedAt", "ConfirmedAt", "PaymentMethod", "Status", "Source").
-		SearchColumns("source")
+	lb := b.Listing("ID", "CreatedAt", "ConfirmedAt", "PaymentMethod", "DeliveryMethod", "Status", "Source").
+		SearchColumns("source").
+		SelectableColumns(true).                // 列可勾选显隐（列设置按钮）
+		ResizableColumns(true).                 // 列宽可拖拽（localStorage 持久化）
+		ReorderableColumns(true).               // 列可拖拽排序（localStorage 持久化）
+		DefaultHiddenColumns("DeliveryMethod"). // 默认隐藏该列（可在列设置里打开）
+		OrderableFields("ID", "CreatedAt").     // 可排序列（表头出现排序图标）
+		PerPage(20)
 
 	// 行级刷新：SSE 推送的「更新」事件只就地补丁对应行的单元格，不整表重渲（消除闪屏）。
 	// 新增/删除（行数变化）仍自动回退整表 reload。代价：状态分布图表头在行级更新时不实时刷新，
 	// 接受——闪屏体验优先（图表随下次整表 reload/手动刷新更新）。
 	lb.RowLevelRefresh(true)
+
+	// 有筛选/搜索时暂停列表 SSE/通知自动刷新：只保留 Updated（自身改动就地补丁），去掉 Created/Deleted
+	// —— 外部新单/删单不打乱正在看的筛选视图；清空筛选/搜索后自动恢复全监听。
+	lb.PauseRefreshWhenFiltered(true)
 
 	// 三个图表数据 GET 事件函数：组件经 DataURL 拉取，返回 r.Data（{data:[...]} 信封，前端读 .data）。
 	const (
@@ -124,14 +134,22 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 				SQLCondition: `status %s ?`,
 				Options:      statusOptions,
 			},
+			// 时间 Tab 用的隐藏筛选项（参考 payManage）：不进面板，仅由下方 FilterTab 的 Query 激活。
+			// SQLCondition 是整日 created_at 范围的字面量（服务端算好、无占位符），命中即整日过滤。
+			{Key: "today", Invisible: true, SQLCondition: orderDayRangeSQL(0)},
+			{Key: "yesterday", Invisible: true, SQLCondition: orderDayRangeSQL(1)},
+			{Key: "beforeyesterday", Invisible: true, SQLCondition: orderDayRangeSQL(2)},
 		}
 	})
 
-	// 快捷筛选 Tab（按状态）：Query 对接 status MultipleSelect 筛选项，格式 `status.in=值`（逗号分隔多值）。
-	// 用于测试：切 Tab / 增删订单触发表格 portal 刷新时，Tab 栏与筛选栏保持挂载、不重渲、不闪。
+	// 快捷筛选 Tab：时间维度（今日/昨日/前日，激活隐藏日范围筛选）+ 状态维度（对接 status MultipleSelect，
+	// 格式 `status.in=值`）。切 Tab / 增删订单触发表格 portal 刷新时，Tab 栏与筛选栏保持挂载、不重渲、不闪。
 	lb.FilterTabsFunc(func(ctx *web.EventContext) []*presets.FilterTab {
 		return []*presets.FilterTab{
 			{ID: "all", Label: "全部", Query: url.Values{"all": []string{"1"}}},
+			{ID: "today", Label: "今日", Query: url.Values{"today": []string{"1"}}},
+			{ID: "yesterday", Label: "昨日", Query: url.Values{"yesterday": []string{"1"}}},
+			{ID: "beforeyesterday", Label: "前日", Query: url.Values{"beforeyesterday": []string{"1"}}},
 			{ID: "pending", Label: "待处理", Query: url.Values{"status.in": []string{string(models.OrderStatus_Pending)}}},
 			{ID: "paid", Label: "已支付", Query: url.Values{"status.in": []string{string(models.OrderStatus_Paid)}}},
 			{ID: "sending", Label: "配送中", Query: url.Values{"status.in": []string{string(models.OrderStatus_Sending)}}},
@@ -144,13 +162,29 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 	// 表格区 portal（按当前筛选/搜索/翻页 locals 重查），图表监听同键平滑重取 —— 不整页 reload、
 	// 不丢筛选、Tab/筛选栏 DOM 保持挂载不闪。
 	lb.Action("Reload").ButtonCompFunc(func(ctx *web.EventContext) h.HTMLComponent {
+		// 关键：本列表开了 PauseRefreshWhenFiltered —— 有筛选/搜索/Tab 时 Created 监听被掐，
+		// 若仍走 handReload（发 Created）刷新按钮会「点了没反应」。故按渲染时是否处于筛选态分流：
+		//   · 筛选态 → 直接 PushState(false).Reload() 重载当前列表（保留筛选/翻页、绕过 pause，
+		//     不改地址栏防 keep-alive 多标签漂移）；
+		//   · 无筛选 → handReload 发 Created（行级刷新、图表不闪，最省）。
+		click := web.Plaid().EventFunc("handReload").Go()
+		if orderListingFiltered(ctx) {
+			click = web.Plaid().PushState(false).Reload().Go()
+		}
 		return shadcn.Button(shadcn.Icon("refresh-cw").Size(16).Class("mr-1"), h.Text("刷新")).
 			Variant(shadcn.ButtonVariantOutline).Size(shadcn.ButtonSizeSm).
-			Attr("@click", web.Plaid().EventFunc("handReload").Go())
+			Toast("刷新中...", shadcn.ToasterPositionTopCenter).
+			Click(click).Busy()
 	})
 	b.RegisterEventFunc("handReload", func(ctx *web.EventContext) (r web.EventResponse, err error) {
 		r.Emit(b.NotifModelsCreated())
 		return
+	})
+
+	// 顶栏「实时」开关：控全局 SSE 静音（localStorage 持久化）。静音时后台推送被丢弃、列表不自动刷新，
+	// 想看最新就点上面的「刷新」按钮拉一次；恢复实时后又自动跟随推送更新。
+	lb.ToolbarTrailing(func(ctx *web.EventContext) h.HTMLComponent {
+		return presets.SSERealtimeToggle("实时")
 	})
 
 	// detailing
@@ -202,6 +236,31 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 			return nil
 		}
 	})
+}
+
+// orderListingFiltered 判断当前列表请求是否处于筛选态（有搜索词 / 激活了 FilterTab / 任一 f_ 筛选）。
+// 用于「刷新」按钮分流：筛选态下 PauseRefreshWhenFiltered 会掐掉 Created 监听，须改走直接重载。
+func orderListingFiltered(ctx *web.EventContext) bool {
+	q := ctx.R.URL.Query()
+	if q.Get("keyword") != "" || q.Get("active_filter_tab") != "" {
+		return true
+	}
+	for k := range q {
+		if len(k) >= 2 && k[:2] == "f_" {
+			return true
+		}
+	}
+	return false
+}
+
+// orderDayRangeSQL 生成「n 天前那一整天」的 created_at 范围 SQL（n=0 今日 /1 昨日 /2 前日）。
+// 时间点由服务端 time.Now() 本地算出、写进字面量（非用户输入，无注入面），供隐藏筛选项直接使用。
+func orderDayRangeSQL(n int) string {
+	now := time.Now()
+	start := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local).AddDate(0, 0, -n)
+	end := start.AddDate(0, 0, 1)
+	const layout = "2006-01-02 15:04:05"
+	return fmt.Sprintf("created_at >= '%s' AND created_at < '%s'", start.Format(layout), end.Format(layout))
 }
 
 // GetColoredStatus 返回带颜色的状态组件

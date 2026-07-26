@@ -189,6 +189,14 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	// 需要时用 b.BottomNav(presets.BottomNavItem{...}) 重新开启。
 	// 全局搜索默认目标页：在不可搜索页（如 dashboard）输入搜索、确定后自动跳 orders 搜订单。
 	b.GlobalSearchDefaultURL("/orders")
+	// 品牌 Logo：一处配，登录页 + 侧栏品牌统一使用（登录页不再显示首字母方块）。
+	// 此 logo-icon.svg 是白色单色标（配深色 primary 方块），故用 BrandLogoComponent 自带外框，
+	// 保证登录页浅底也高对比；侧栏自定义 SidebarBrandFunc 内改读 b.GetBrandLogo("") 共享同一组件（同源）。
+	b.BrandLogoComponent(
+		h.Div(
+			h.Img("/assets/logo-icon.svg").Class("size-6").Style("filter: brightness(0) invert(1);"),
+		).Class("flex aspect-square size-10 items-center justify-center rounded-lg bg-primary shrink-0"),
+	)
 	// 数据隔离全局 resolver：非 admin 只看自己的数据，admin 看全部。
 	// ownerValue 用 string（匹配 activity.ActivityLog.UserID 的 string 列）。
 	b.DataScopeResolver(func(ctx *web.EventContext) (any, bool) {
@@ -426,6 +434,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	ui_demo.ConfigNonIDPKDemo(b, db)
 	ui_demo.ConfigEditingActionsDemo(b, db)
 	ui_demo.ConfigRowRefreshDemo(b, db)
+	ui_demo.ConfigNodataDemo(b) // 纯展示列表（DB 无表，SearchFunc 供数据）
 	ui_demo.ConfigRelayPaginationDemo(b, db)
 	ui_demo.ConfigPermResourceEventDemo(b, db) // 自定义权限资源 + 裸事件鉴权演示
 	wizard_demo.ConfigWizardDemo(b, db)
@@ -725,10 +734,8 @@ func configMenuOrder(b *presets.Builder) {
 		}
 		// 参考 payManage 排版：圆角方形 logo 块（bg-primary 实色 + 白色 logo-icon）+ 双行文字
 		return h.A().Href("/").Class("flex w-full items-center gap-2 px-2 py-1 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center").Children(
-			// 圆角方形 logo 块（折叠态常驻）
-			h.Div(
-				h.Img("/assets/logo-icon.svg").Class("size-5").Style("filter: brightness(0) invert(1);"),
-			).Class("flex aspect-square size-8 items-center justify-center rounded-lg bg-primary shrink-0"),
+			// 圆角方形 logo 块（折叠态常驻）：读 b.GetBrandLogo() 与登录页共享同一 BrandLogoComponent（同源）
+			b.GetBrandLogo(""),
 			// 文字块：系统名(粗) + 当前用户名(小灰)；折叠态隐藏只剩图标
 			h.Div(
 				h.Span(name).Class("block truncate text-sm font-semibold leading-tight"),
