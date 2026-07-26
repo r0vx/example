@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnFilterDemo 虚拟模型
@@ -101,7 +101,7 @@ func shadcnFilterBody(ctx *web.EventContext) h.HTMLComponent {
 					h.Div(
 						h.H3("当前筛选条件:").Style("font-weight: 600; margin-bottom: 8px;"),
 						h.Tag("pre").Children(
-							h.Text("{{ JSON.stringify(locals.filterValue || {}, null, 2) }}"),
+							h.Interp("{{ JSON.stringify(locals.filterValue || {}, null, 2) }}"),
 						).Style("background: #f3f4f6; padding: 12px; border-radius: 4px; font-size: 12px; overflow-x: auto;"),
 					).Class("mt-4"),
 				),

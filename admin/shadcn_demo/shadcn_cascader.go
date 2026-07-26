@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnCascaderDemo 虚拟模型
@@ -102,7 +102,7 @@ func shadcnCascaderBody(ctx *web.EventContext) h.HTMLComponent {
 						Class("max-w-md"),
 				),
 				h.Div(
-					h.Span("选中: {{ form.location?.join(' / ') || '未选择' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("选中: {{ form.location?.join(' / ') || '未选择' }}")).Class("text-sm text-muted-foreground"),
 				).Class("mt-2"),
 			).VSlot("{ form }").FormInit(`{ "location": [] }`),
 		).Class("demo-section"),
@@ -118,7 +118,7 @@ func shadcnCascaderBody(ctx *web.EventContext) h.HTMLComponent {
 					Row(true).
 					Attr("v-model", "form.location"),
 				h.Div(
-					h.Span("选中: {{ form.location?.join(' / ') || '未选择' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("选中: {{ form.location?.join(' / ') || '未选择' }}")).Class("text-sm text-muted-foreground"),
 				).Class("mt-2"),
 			).VSlot("{ form }").FormInit(`{ "location": [] }`),
 		).Class("demo-section"),
@@ -158,7 +158,7 @@ func shadcnCascaderBody(ctx *web.EventContext) h.HTMLComponent {
 					Row(true).
 					Attr("v-model", "form.location"),
 				h.Div(
-					h.Span("选中: {{ form.location?.join(' / ') || '未选择' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("选中: {{ form.location?.join(' / ') || '未选择' }}")).Class("text-sm text-muted-foreground"),
 				).Class("mt-2"),
 			).VSlot("{ form }").FormInit(`{ "location": [] }`),
 		).Class("demo-section"),

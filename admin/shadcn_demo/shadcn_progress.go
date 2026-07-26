@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnProgressDemo 虚拟模型
@@ -83,7 +83,7 @@ func shadcnProgressBody(ctx *web.EventContext) h.HTMLComponent {
 					Button(h.Text("Toggle Loading")).
 						Variant(ButtonVariantOutline).
 						Attr("@click", "locals.loading = !locals.loading"),
-					h.Span("{{ locals.loading ? 'Loading...' : 'Idle' }}").Class("ml-4 text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("{{ locals.loading ? 'Loading...' : 'Idle' }}")).Class("ml-4 text-sm text-muted-foreground"),
 				).Class("flex items-center"),
 			).VSlot("{ locals }").Init(`{ loading: true }`),
 		).Class("demo-section"),
@@ -186,7 +186,7 @@ func shadcnProgressBody(ctx *web.EventContext) h.HTMLComponent {
 						Variant(ButtonVariantOutline).
 						Size(ButtonSizeSm).
 						Attr("@click", "locals.progress = 0"),
-					h.Span("{{ locals.progress }}%").Class("ml-4 text-sm font-medium"),
+					h.Tag("span").Children(h.Interp("{{ locals.progress }}%")).Class("ml-4 text-sm font-medium"),
 				).Class("flex items-center gap-2"),
 			).VSlot("{ locals }").Init(`{ progress: 0 }`),
 		).Class("demo-section"),
@@ -207,7 +207,7 @@ func shadcnProgressBody(ctx *web.EventContext) h.HTMLComponent {
 				h.Div(
 					Button(h.Text("Simulate Fetch")).
 						On("click", web.POST().EventFunc("simulateFetch").Go()),
-					h.Span("{{ locals.fetching ? 'Fetching...' : 'Ready' }}").Class("ml-4 text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("{{ locals.fetching ? 'Fetching...' : 'Ready' }}")).Class("ml-4 text-sm text-muted-foreground"),
 				).Class("flex items-center"),
 			).VSlot("{ locals }").Init(`{ fetching: false }`),
 			h.P(h.Text("这类似于 Vuetify VProgressLinear 在 admin presets 中的用法")).Class("mt-4 text-xs text-muted-foreground"),

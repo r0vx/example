@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnNewComponentsDemo 虚拟模型
@@ -59,7 +59,7 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 							Variant(ButtonVariantOutline).
 							Attr(":loading", "locals.loading").
 							Attr("@click", "locals.loading = true; vars.__window.setTimeout(() => locals.loading = false, 2000)"),
-						h.Span("{{ locals.loading ? 'Loading...' : 'Click to test' }}").Class("text-sm text-muted-foreground"),
+						h.Tag("span").Children(h.Interp("{{ locals.loading ? 'Loading...' : 'Click to test' }}")).Class("text-sm text-muted-foreground"),
 					).Class("flex items-center gap-2"),
 				).VSlot("{ locals }").Init(`{ loading: false }`),
 			),
@@ -75,7 +75,7 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 					web.Scope(
 						h.Div(
 							Slider().DefaultValue(50).Max(100).Class("w-72").Attr("v-model", "form.value"),
-							h.Span("{{ form.value[0] }}").Class("ml-4 text-sm"),
+							h.Tag("span").Children(h.Interp("{{ form.value[0] }}")).Class("ml-4 text-sm"),
 						).Class("flex items-center"),
 					).VSlot("{ form }").FormInit(`{ "value": [50] }`),
 				).Class("mb-4"),
@@ -152,7 +152,7 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 					web.Scope(
 						h.Div(
 							TimePicker().Label("选择时间").Attr("v-model", "form.time1"),
-							h.Span("{{ form.time1 || '未选择' }}").Class("ml-4 text-sm text-muted-foreground"),
+							h.Tag("span").Children(h.Interp("{{ form.time1 || '未选择' }}")).Class("ml-4 text-sm text-muted-foreground"),
 						).Class("flex items-center"),
 					).VSlot("{ form }").FormInit(`{ "time1": "" }`),
 				).Class("mb-4"),
@@ -161,7 +161,7 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 					web.Scope(
 						h.Div(
 							TimePicker().Label("选择时间").ShowSeconds(true).Attr("v-model", "form.time2"),
-							h.Span("{{ form.time2 || '未选择' }}").Class("ml-4 text-sm text-muted-foreground"),
+							h.Tag("span").Children(h.Interp("{{ form.time2 || '未选择' }}")).Class("ml-4 text-sm text-muted-foreground"),
 						).Class("flex items-center"),
 					).VSlot("{ form }").FormInit(`{ "time2": "" }`),
 				).Class("mb-4"),
@@ -170,7 +170,7 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 					web.Scope(
 						h.Div(
 							TimePicker().Attr("v-model", "form.time3"),
-							h.Span("{{ form.time3 }}").Class("ml-4 text-sm text-muted-foreground"),
+							h.Tag("span").Children(h.Interp("{{ form.time3 }}")).Class("ml-4 text-sm text-muted-foreground"),
 						).Class("flex items-center"),
 					).VSlot("{ form }").FormInit(`{ "time3": "14:30" }`),
 				),
@@ -187,8 +187,8 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 						RangePicker().Placeholder("选择日期范围").Attr("v-model", "form.range"),
 					).Class("mb-2"),
 					h.Div(
-						h.Span("Start: {{ form.range?.start || '-' }}").Class("text-sm text-muted-foreground mr-4"),
-						h.Span("End: {{ form.range?.end || '-' }}").Class("text-sm text-muted-foreground"),
+						h.Tag("span").Children(h.Interp("Start: {{ form.range?.start || '-' }}")).Class("text-sm text-muted-foreground mr-4"),
+						h.Tag("span").Children(h.Interp("End: {{ form.range?.end || '-' }}")).Class("text-sm text-muted-foreground"),
 					),
 				).VSlot("{ form }").FormInit(`{ "range": null }`),
 			),
@@ -205,7 +205,7 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 						h.Div(
 							TagInput().Placeholder("输入后按 Enter 添加标签").Attr("v-model", "form.tags"),
 						).Class("max-w-md mb-2"),
-						h.Span("Tags: {{ form.tags.join(', ') || '无' }}").Class("text-sm text-muted-foreground"),
+						h.Tag("span").Children(h.Interp("Tags: {{ form.tags.join(', ') || '无' }}")).Class("text-sm text-muted-foreground"),
 					).VSlot("{ form }").FormInit(`{ "tags": [] }`),
 				).Class("mb-4"),
 				h.Div(
@@ -254,7 +254,7 @@ func shadcnNewComponentsBody(ctx *web.EventContext) h.HTMLComponent {
 				h.Div(
 					Button(h.Text("上一步")).Variant(ButtonVariantOutline).Attr("@click", "form.step > 1 && form.step--").Class("mr-2"),
 					Button(h.Text("下一步")).Attr("@click", "form.step < 3 && form.step++"),
-					h.Span("当前步骤: {{ form.step }}").Class("ml-4 text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("当前步骤: {{ form.step }}")).Class("ml-4 text-sm text-muted-foreground"),
 				).Class("mt-4"),
 			).VSlot("{ form }").FormInit(`{ "step": 1 }`),
 		).Class("demo-section"),

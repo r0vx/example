@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnAutocompleteDemo 虚拟模型
@@ -83,7 +83,7 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					Placeholder("选择水果..."),
 				h.Div(
 					h.Text("选中的值: "),
-					h.Tag("code").Children(h.Text("{{locals.basicValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.basicValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 			).Init(`{basicValue: ''}`).VSlot("{ locals }"),
 		).Class("demo-section"),
@@ -100,7 +100,7 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					Placeholder("选择前端框架..."),
 				h.Div(
 					h.Text("选中的值: "),
-					h.Tag("code").Children(h.Text("{{locals.multipleValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.multipleValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 			).Init(`{multipleValue: []}`).VSlot("{ locals }"),
 		).Class("demo-section"),
@@ -117,7 +117,7 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					Placeholder("选择食物..."),
 				h.Div(
 					h.Text("选中的值: "),
-					h.Tag("code").Children(h.Text("{{locals.groupedValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.groupedValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 			).Init(`{groupedValue: ''}`).VSlot("{ locals }"),
 		).Class("demo-section"),
@@ -134,7 +134,7 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					Placeholder("选择角色..."),
 				h.Div(
 					h.Text("选中的值: "),
-					h.Tag("code").Children(h.Text("{{locals.exclusiveValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.exclusiveValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 			).Init(`{exclusiveValue: []}`).VSlot("{ locals }"),
 		).Class("demo-section"),
@@ -157,11 +157,11 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					Placeholder("输入或创建标签..."),
 				h.Div(
 					h.Text("选中的值: "),
-					h.Tag("code").Children(h.Text("{{locals.createValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.createValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 				h.Div(
 					h.Text("所有标签: "),
-					h.Tag("code").Children(h.Text("{{locals.tags.map(t => t.text).join(', ')}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.tags.map(t => t.text).join(', ')}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 8px; font-size: 14px; color: #666;"),
 			).Init(`{
 				createValue: '',
@@ -208,7 +208,7 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					EmptyText("未找到用户"),
 				h.Div(
 					h.Text("选中的值: "),
-					h.Tag("code").Children(h.Text("{{locals.remoteValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.remoteValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 				h.Div(
 					h.Text("提示: 输入用户名进行搜索,防抖延迟 300ms,模拟 API 延迟 500ms"),
@@ -255,7 +255,7 @@ func shadcnAutocompleteBody(ctx *web.EventContext) h.HTMLComponent {
 					LoadingText("搜索中..."),
 				h.Div(
 					h.Text("选中的值: "),
-					h.Tag("code").Children(h.Text("{{locals.advancedValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
+					h.Tag("code").Children(h.Interp("{{locals.advancedValue}}")).Style("background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace;"),
 				).Style("margin-top: 12px; font-size: 14px;"),
 				h.Div(
 					h.Text("此示例结合了远程搜索、分组显示和创建新项三大功能"),

@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnRangePickerDemo 虚拟模型
@@ -41,8 +41,8 @@ func shadcnRangePickerBody(ctx *web.EventContext) h.HTMLComponent {
 					RangePicker().Placeholder("选择日期范围").Attr("v-model", "form.range"),
 				).Class("mb-4"),
 				h.Div(
-					h.Span("Start: {{ form.range?.start || '-' }}").Class("text-sm text-muted-foreground mr-4"),
-					h.Span("End: {{ form.range?.end || '-' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("Start: {{ form.range?.start || '-' }}")).Class("text-sm text-muted-foreground mr-4"),
+					h.Tag("span").Children(h.Interp("End: {{ form.range?.end || '-' }}")).Class("text-sm text-muted-foreground"),
 				),
 			).VSlot("{ form }").FormInit(`{ "range": null }`),
 		).Class("demo-section"),
@@ -56,8 +56,8 @@ func shadcnRangePickerBody(ctx *web.EventContext) h.HTMLComponent {
 					RangePicker().Placeholder("选择日期范围").NumberOfMonths(2).Attr("v-model", "form.range2"),
 				).Class("mb-4"),
 				h.Div(
-					h.Span("Start: {{ form.range2?.start || '-' }}").Class("text-sm text-muted-foreground mr-4"),
-					h.Span("End: {{ form.range2?.end || '-' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("Start: {{ form.range2?.start || '-' }}")).Class("text-sm text-muted-foreground mr-4"),
+					h.Tag("span").Children(h.Interp("End: {{ form.range2?.end || '-' }}")).Class("text-sm text-muted-foreground"),
 				),
 			).VSlot("{ form }").FormInit(`{ "range2": null }`),
 		).Class("demo-section"),
@@ -101,7 +101,7 @@ func shadcnRangePickerBody(ctx *web.EventContext) h.HTMLComponent {
 				).Class("max-w-md"),
 				h.Div(
 					h.H4("Form Data:").Class("text-sm font-medium mt-4 mb-2"),
-					h.Pre("{{ JSON.stringify(form, null, 2) }}").Class("text-xs bg-muted p-2 rounded"),
+					h.Tag("pre").Children(h.Interp("{{ JSON.stringify(form, null, 2) }}")).Class("text-xs bg-muted p-2 rounded"),
 				),
 			).VSlot("{ form }").FormInit(`{ "name": "", "dateRange": null, "rooms": 1 }`),
 		).Class("demo-section"),
@@ -124,8 +124,8 @@ func shadcnRangePickerBody(ctx *web.EventContext) h.HTMLComponent {
 					).Class("mb-4"),
 					RangePicker().Placeholder("选择日期范围").Attr("v-model", "form.presetRange"),
 					h.Div(
-						h.Span("Start: {{ form.presetRange?.start || '-' }}").Class("text-sm text-muted-foreground mr-4"),
-						h.Span("End: {{ form.presetRange?.end || '-' }}").Class("text-sm text-muted-foreground"),
+						h.Tag("span").Children(h.Interp("Start: {{ form.presetRange?.start || '-' }}")).Class("text-sm text-muted-foreground mr-4"),
+						h.Tag("span").Children(h.Interp("End: {{ form.presetRange?.end || '-' }}")).Class("text-sm text-muted-foreground"),
 					).Class("mt-4"),
 				),
 			).VSlot("{ locals, form }").FormInit(`{ "presetRange": null }`).Init(`{

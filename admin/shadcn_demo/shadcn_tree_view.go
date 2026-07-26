@@ -79,10 +79,10 @@ func shadcnTreeViewBody(ctx *web.EventContext) h.HTMLComponent {
 						Class("border rounded-md p-4 max-w-md"),
 				),
 				h.Div(
-					h.Span("选中: {{ form.selected || '无' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("选中: {{ form.selected || '无' }}")).Class("text-sm text-muted-foreground"),
 				).Class("mt-2"),
 				h.Div(
-					h.Span("展开: {{ form.expanded?.join(', ') || '无' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("展开: {{ form.expanded?.join(', ') || '无' }}")).Class("text-sm text-muted-foreground"),
 				).Class("mt-1"),
 			).VSlot("{ form }").FormInit(`{ "selected": null, "expanded": ["1", "1-2"] }`),
 		).Class("demo-section"),
@@ -100,7 +100,7 @@ func shadcnTreeViewBody(ctx *web.EventContext) h.HTMLComponent {
 						Class("border rounded-md p-4 max-w-md"),
 				),
 				h.Div(
-					h.Span("选中: {{ form.selected?.join(', ') || '无' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("选中: {{ form.selected?.join(', ') || '无' }}")).Class("text-sm text-muted-foreground"),
 				).Class("mt-2"),
 			).VSlot("{ form }").FormInit(`{ "selected": [] }`),
 		).Class("demo-section"),

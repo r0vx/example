@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // ShadcnFormFieldDemo 虚拟模型
@@ -45,7 +45,7 @@ func shadcnFormFieldBody(ctx *web.EventContext) h.HTMLComponent {
 						Attr("v-model", "form.username"),
 				).Class("mb-4"),
 				h.Div(
-					h.Span("Value: {{ form.username || '-' }}").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("Value: {{ form.username || '-' }}")).Class("text-sm text-muted-foreground"),
 				),
 			).VSlot("{ form }").FormInit(`{ "username": "" }`),
 		).Class("demo-section"),
@@ -85,7 +85,7 @@ func shadcnFormFieldBody(ctx *web.EventContext) h.HTMLComponent {
 						Attr("v-model", "form.age"),
 				).Class("mb-4"),
 				h.Div(
-					h.Pre("{{ JSON.stringify(form, null, 2) }}").Class("text-xs bg-muted p-2 rounded"),
+					h.Tag("pre").Children(h.Interp("{{ JSON.stringify(form, null, 2) }}")).Class("text-xs bg-muted p-2 rounded"),
 				),
 			).VSlot("{ form }").FormInit(`{ "email": "", "phone": "", "website": "", "age": null }`),
 		).Class("demo-section"),
@@ -104,7 +104,7 @@ func shadcnFormFieldBody(ctx *web.EventContext) h.HTMLComponent {
 						Attr("v-model", "form.description"),
 				).Class("mb-4"),
 				h.Div(
-					h.Span("{{ form.description?.length || 0 }} / 500").Class("text-sm text-muted-foreground"),
+					h.Tag("span").Children(h.Interp("{{ form.description?.length || 0 }} / 500")).Class("text-sm text-muted-foreground"),
 				),
 			).VSlot("{ form }").FormInit(`{ "description": "" }`),
 		).Class("demo-section"),

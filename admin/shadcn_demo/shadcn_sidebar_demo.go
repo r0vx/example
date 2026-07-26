@@ -2,9 +2,9 @@ package shadcn_demo
 
 import (
 	"github.com/r0vx/admin/presets"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	. "github.com/r0vx/x/ui/shadcn"
-	h "github.com/r0vx/htmlgo"
 )
 
 // menuIcon 返回菜单图标
@@ -163,7 +163,7 @@ func shadcnSidebarDemoBody(ctx *web.EventContext) h.HTMLComponent {
 						web.Scope(
 							h.Div(
 								DatePicker().Placeholder("选择日期").Attr("v-model", "form.date1"),
-								h.Span("{{ form.date1 || '未选择' }}").Class("ml-4 text-sm text-muted-foreground"),
+								h.Tag("span").Children(h.Interp("{{ form.date1 || '未选择' }}")).Class("ml-4 text-sm text-muted-foreground"),
 							).Class("flex items-center"),
 						).VSlot("{ form }").FormInit(`{ "date1": "" }`),
 					).Class("mb-6"),
@@ -174,7 +174,7 @@ func shadcnSidebarDemoBody(ctx *web.EventContext) h.HTMLComponent {
 						web.Scope(
 							h.Div(
 								DatePicker().Placeholder("选择生日").Attr("v-model", "form.birthday"),
-								h.Span("{{ form.birthday }}").Class("ml-4 text-sm text-muted-foreground"),
+								h.Tag("span").Children(h.Interp("{{ form.birthday }}")).Class("ml-4 text-sm text-muted-foreground"),
 							).Class("flex items-center"),
 						).VSlot("{ form }").FormInit(`{ "birthday": "2024-01-15" }`),
 					).Class("mb-6"),

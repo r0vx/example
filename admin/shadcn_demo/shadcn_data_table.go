@@ -100,7 +100,7 @@ func shadcnDataTableBody(ctx *web.EventContext) h.HTMLComponent {
 				).Class("mb-4"),
 				h.Div(
 					h.H4("Selected IDs:").Class("text-sm font-medium mb-2"),
-					h.Pre("{{ JSON.stringify(form.selectedIds, null, 2) }}").Class("text-xs bg-muted p-2 rounded"),
+					h.Tag("pre").Children(h.Interp("{{ JSON.stringify(form.selectedIds, null, 2) }}")).Class("text-xs bg-muted p-2 rounded"),
 				),
 			).VSlot("{ form }").FormInit(`{ "selectedIds": [] }`),
 		).Class("demo-section"),
