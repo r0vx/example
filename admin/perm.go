@@ -10,7 +10,9 @@ import (
 )
 
 func initPermission(b *presets.Builder, db *gorm.DB) {
-	perm.Verbose = true
+	// perm.Verbose 仅在排查权限问题时打开：每次鉴权都会 fmt.Printf 全量结构体，
+	// profile 实测占整服务 CPU 约 1/3,日常开发务必保持关闭。
+	perm.Verbose = false
 	b.Permission(
 		perm.New().Policies(
 			perm.PolicyFor(perm.Anybody).WhoAre(perm.Denied).ToDo(perm.Denied).On(perm.Anything),
