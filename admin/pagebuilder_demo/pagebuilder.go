@@ -3,11 +3,16 @@ package pagebuilder_demo
 import (
 	"example/admin/pagebuilder/containers"
 	"example/models"
+	"log"
 
-	h "github.com/r0vx/htmlgo"
+	"github.com/r0vx/admin/activity"
 	"github.com/r0vx/admin/l10n"
+	"github.com/r0vx/admin/media"
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
+	"github.com/r0vx/admin/publish"
+	"github.com/r0vx/admin/seo"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"gorm.io/gorm"
 )
@@ -24,8 +29,21 @@ import (
 //
 // ============================================================================
 
-// configPageBuilderDemo 配置 PageBuilder 演示模块
-func ConfigPageBuilderDemo(b *presets.Builder, db *gorm.DB, l10nBuilder ...*l10n.Builder) *pagebuilder.Builder {
+// Dependencies reuses the application's configured PageBuilder plugin instances.
+type Dependencies struct {
+	L10n      *l10n.Builder
+	Activity  *activity.Builder
+	Media     *media.Builder
+	SEO       *seo.Builder
+	Publisher *publish.Builder
+}
+
+// ConfigPageBuilderDemo 配置 PageBuilder 演示模块。
+func ConfigPageBuilderDemo(
+	b *presets.Builder,
+	db *gorm.DB,
+	dependencies Dependencies,
+) *pagebuilder.Builder {
 	// 迁移容器模型表
 	db.AutoMigrate(
 		&models.PBDemoHero{},
@@ -50,12 +68,21 @@ func ConfigPageBuilderDemo(b *presets.Builder, db *gorm.DB, l10nBuilder ...*l10n
 	pb := pagebuilder.New("/page_builder", db).
 		AutoMigrate().
 		DefaultDevice("computer").
-		PreviewOpenNewTab(true)
-
-	// 设置 l10n 插件（多语言支持）
-	if len(l10nBuilder) > 0 && l10nBuilder[0] != nil {
-		pb.L10n(l10nBuilder[0])
-	}
+		PreviewOpenNewTab(true).
+		PreviewContainer(true).
+		ExpendContainers(true).
+		PublishBtnColor("primary").
+		DuplicateBtnColor("secondary").
+		PageStyle(h.Tag("style").
+			Attr("data-pagebuilder-style", "example").
+			Children(h.RawHTML(`
+body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; }
+`))).
+		L10n(dependencies.L10n).
+		Activity(dependencies.Activity).
+		Media(dependencies.Media).
+		SEO(dependencies.SEO).
+		Publisher(dependencies.Publisher)
 
 	// 注册内置演示容器
 	registerHeroContainer(pb)
@@ -78,11 +105,37 @@ func ConfigPageBuilderDemo(b *presets.Builder, db *gorm.DB, l10nBuilder ...*l10n
 
 	// 自动填充演示数据（表为空时）
 	seedPageBuilderDemo(db)
+	repairDemoRelationships(db, pb)
 
 	// 注册内置 Page 模型到 presets
 	b.Use(pb)
 
 	return pb
+}
+
+// repairDemoRelationships safely relinks only unambiguous invalid demo rows.
+func repairDemoRelationships(db *gorm.DB, builder *pagebuilder.Builder) {
+	report, err := pagebuilder.RepairInvalidRelationships(
+		db,
+		builder,
+		pagebuilder.RepairOptions{DemoOnly: true},
+	)
+	if err != nil {
+		log.Printf("pagebuilder demo relationship repair failed: %v", err)
+		return
+	}
+	if report.Repaired > 0 {
+		log.Printf("pagebuilder repaired %d demo relationship(s)", report.Repaired)
+	}
+	for _, issue := range report.Issues {
+		log.Printf(
+			"pagebuilder left demo relationship %s/%d (%s) unchanged: %s",
+			issue.Table,
+			issue.ID,
+			issue.ModelName,
+			issue.Reason,
+		)
+	}
 }
 
 // seedPageBuilderDemo 如果表为空则插入演示数据
@@ -106,13 +159,14 @@ func seedPageBuilderDemo(db *gorm.DB) {
 	// 页面
 	page := &pagebuilder.Page{Title: "Demo Homepage", Slug: "/"}
 	page.Version.Version = "2024-01-01-v01"
+	page.LocaleCode = "International"
 	db.Create(page)
 
 	// 容器引用
 	containers := []pagebuilder.Container{
-		{PageID: page.ID, PageVersion: page.Version.Version, PageModelName: "Page", ModelName: "Banner", ModelID: banner.ID, DisplayOrder: 1, DisplayName: "Banner"},
-		{PageID: page.ID, PageVersion: page.Version.Version, PageModelName: "Page", ModelName: "Hero", ModelID: hero.ID, DisplayOrder: 2, DisplayName: "Hero"},
-		{PageID: page.ID, PageVersion: page.Version.Version, PageModelName: "Page", ModelName: "RichText", ModelID: richText.ID, DisplayOrder: 3, DisplayName: "RichText"},
+		{PageID: page.ID, PageVersion: page.Version.Version, PageModelName: "Page", ModelName: "Banner", ModelID: banner.ID, DisplayOrder: 1, DisplayName: "Banner", Locale: l10n.Locale{LocaleCode: "International"}},
+		{PageID: page.ID, PageVersion: page.Version.Version, PageModelName: "Page", ModelName: "Hero", ModelID: hero.ID, DisplayOrder: 2, DisplayName: "Hero", Locale: l10n.Locale{LocaleCode: "International"}},
+		{PageID: page.ID, PageVersion: page.Version.Version, PageModelName: "Page", ModelName: "RichText", ModelID: richText.ID, DisplayOrder: 3, DisplayName: "RichText", Locale: l10n.Locale{LocaleCode: "International"}},
 	}
 	db.Create(&containers)
 }

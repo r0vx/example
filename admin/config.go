@@ -123,6 +123,8 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	if err := db.AutoMigrate(
 		&models.Post{},
 		&models.InputDemo{},
+		&models.L10nModel{},
+		&models.L10nModelWithVersion{},
 		&models.User{},
 		&models.ListModel{},
 		&perm.Role{},
@@ -376,7 +378,17 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	crud_demo.ConfigNestedFieldDemo(b, db, ab)
 	crud_demo.ConfigMembershipCard(b, db, ab)
 
-	pageBuilder := pagebuilder_demo.ConfigPageBuilderDemo(b, db, l10nBuilder)
+	pageBuilder := pagebuilder_demo.ConfigPageBuilderDemo(
+		b,
+		db,
+		pagebuilder_demo.Dependencies{
+			L10n:      l10nBuilder,
+			Activity:  ab,
+			Media:     mediab,
+			SEO:       seoBuilder,
+			Publisher: publisher,
+		},
+	)
 
 	configListModel(b, ab, publisher)
 
