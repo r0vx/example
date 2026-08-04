@@ -58,7 +58,10 @@ func ConfigCrossTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 	catLB := catMB.Listing("Name", "Code").SelectableColumns(false).
 		ResizableColumns(true).
 		ReorderableColumns(true)
-	catLB.CrossTreeMode(presets.CrossTree(artMB, "CategoryID"))
+	// SearchRootsOnly(true)：搜索只筛父表（分类），命中的分类仍可展开其全部文章子行。
+	// 去掉即恢复默认——搜索时退化为平铺分类列表，文章子行整个消失。
+	catLB.CrossTreeMode(presets.CrossTree(artMB, "CategoryID").SearchRootsOnly(true))
+	catLB.SearchColumns("name", "code")
 	catMB.Editing("Name", "Code")
 }
 

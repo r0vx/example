@@ -31,7 +31,10 @@ func ConfigTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 	mb := b.Model(&Department{}).URIName("tree-listing-demo")
 	lb := mb.Listing("ID", "Name", "Code")
 	// ExpandInActions(true)：展开按钮放行尾 action 列（默认在第一列跟随缩进，删掉该调用即恢复）
-	lb.TreeMode(presets.Tree("ParentID").ExpandInActions(true))
+	// SearchRootsOnly(true)：搜索只筛顶层部门，命中的部门仍可展开其完整子树（不退化平铺）。
+	// 试：搜 "Tech" → 只剩「技术中心」一行，展开后其下全部子部门照常可见（子层不受关键词过滤）。
+	// 去掉该调用即恢复默认——搜索时退化为平铺列表。
+	lb.TreeMode(presets.Tree("ParentID").ExpandInActions(true).SearchRootsOnly(true))
 	lb.SearchColumns("name", "code")
 
 	rmb := lb.RowMenu().InlineDefaultsInMenu(true)
