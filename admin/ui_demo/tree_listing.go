@@ -30,6 +30,9 @@ func ConfigTreeListingDemo(b *presets.Builder, db *gorm.DB) {
 
 	mb := b.Model(&Department{}).URIName("tree-listing-demo")
 	lb := mb.Listing("ID", "Name", "Code")
+	// 树形态下也可点表头排序：排序作用于每一层，同级兄弟按序排列、父子层级不变。
+	// 试：点「Name」表头 → 根部门按名排序，展开后各层子部门同样有序。
+	lb.OrderableFields("ID", "Name", "Code")
 	// ExpandInActions(true)：展开按钮放行尾 action 列（默认在第一列跟随缩进，删掉该调用即恢复）
 	// SearchRootsOnly(true)：搜索只筛顶层部门，命中的部门仍可展开其完整子树（不退化平铺）。
 	// 试：搜 "Tech" → 只剩「技术中心」一行，展开后其下全部子部门照常可见（子层不受关键词过滤）。
