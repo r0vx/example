@@ -347,7 +347,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 		})
 	var w *worker.Builder
 	if enableWork {
-		w = worker.New(db)
+		w = worker.New(db).AutoMigrate()
 		defer w.Listen()
 		addJobs(w)
 		crud_demo.ConfigProduct(b, db, w, publisher)
@@ -392,7 +392,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 
 	configListModel(b, ab, publisher)
 
-	microb := microsite.New(db).Publisher(publisher)
+	microb := microsite.New(db).AutoMigrate().Publisher(publisher)
 
 	l10nBuilder.Activity(ab)
 	l10nM, l10nVM := crud_demo.ConfigL10nModel(db, b)
