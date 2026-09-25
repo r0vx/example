@@ -30,7 +30,9 @@ func TestActivityLogs(t *testing.T) {
 		Name:  "viwer@theplant.jp",
 		Roles: []perm.Role{
 			{
-				Name: models.RoleEditor,
+				// 用 Admin：本用例只验证操作日志页能列出 login 记录，与角色无关；
+				// example 的静态权限只放行 Admin（见 admin/perm.go），Editor 会被拒绝
+				Name: models.RoleAdmin,
 			},
 		},
 	})
