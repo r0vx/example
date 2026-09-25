@@ -56,7 +56,9 @@ func TestActivityLogs(t *testing.T) {
 				eCDashboardData.TruncatePut(dbr)
 				return httptest.NewRequest("GET", "/ec-dashboard", http.NoBody)
 			},
-			ExpectPageBodyContainsInOrder: []string{"Statistics", "Order Status", "Pending"},
+			// 仪表盘已改版为中文标题（admin/ec_demo/ec_dashboard_config.go）；
+			// Pending 来自 fixture 订单，出现在订单状态图表数据里
+			ExpectPageBodyContainsInOrder: []string{"商品总数", "订单总数", "订单状态分布", "Pending"},
 		},
 	}
 
