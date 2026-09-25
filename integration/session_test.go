@@ -156,7 +156,8 @@ func TestSession(t *testing.T) {
 		r, err := http.NewRequest("GET", "/", nil)
 		require.NoError(t, err)
 		r.AddCookie(&http.Cookie{Name: "auth", Value: "token1"})
-		r.Header.Set("X-Forwarded-For", "192.168.1.1")
+		// 默认不信任 X-Forwarded-For（可被客户端伪造），客户端 IP 取 RemoteAddr；用 RemoteAddr 模拟换 IP
+		r.RemoteAddr = "192.168.1.1:12345"
 		err = sb.IsSessionValid(r, uid)
 		require.ErrorContains(t, err, "IP mismatch")
 

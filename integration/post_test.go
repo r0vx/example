@@ -48,7 +48,8 @@ func TestPost(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectPortalUpdate0ContainsInOrder: []string{`Title`, `vx-field`, "Hero Image", "Choose File", "Body", "vx-tiptap-editor"},
+			// Body 在详情编辑区刻意配置为普通 Textarea（admin/config.go 的 detailSection）
+			ExpectPortalUpdate0ContainsInOrder: []string{`label='Title'`, `>Hero Image<`, `>Choose File<`, `<shd-textarea`, `label='Body'`},
 		},
 		{
 			Name:  "Index Post View",
@@ -60,7 +61,7 @@ func TestPost(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectPageBodyContainsInOrder: []string{`Demo`, `vx-filter`, "Create Time"},
+			ExpectPageBodyContainsInOrder: []string{`Demo`, `<shd-filter`, "Create Time"},
 		},
 		{
 			Name:  "Post Validate Event",

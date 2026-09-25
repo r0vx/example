@@ -38,7 +38,8 @@ func TestL18n(t *testing.T) {
 				req.Header.Add("accept-language", "ja")
 				return req
 			},
-			ExpectPageBodyContainsInOrder: []string{`メールアドレス`},
+			// 登录模块的日文翻译已于 2025-07 移除（x/login 只注册 en / zh），ja 回退英文
+			ExpectPageBodyContainsInOrder: []string{`Email`},
 		},
 	}
 

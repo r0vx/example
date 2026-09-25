@@ -57,7 +57,8 @@ func TestUsers(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectPortalUpdate0ContainsInOrder: []string{`viwer@theplant.jp`, `Email`, `OAuth Provider`, `google`, `Company`, "Roles"},
+			// 用户表单改版：Email 更名为 Account，表单不再展示 OAuth 字段（admin/crud_demo/user.go）
+			ExpectPortalUpdate0ContainsInOrder: []string{`viwer@theplant.jp`, `label='Company'`, `label='Account'`, `label='Roles'`},
 		},
 		{
 			Name:  "User InValidate",
@@ -74,7 +75,7 @@ func TestUsers(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectPortalUpdate0ContainsInOrder: []string{`test@theplant.jp`, `Email`, `Email is required`, `Company`, "Roles"},
+			ExpectPortalUpdate0ContainsInOrder: []string{`test@theplant.jp`, `label='Company'`, `label='Account'`, `Account is required`, `label='Roles'`},
 		},
 		{
 			Name:  "User Update With Google Provider",
@@ -90,9 +91,10 @@ func TestUsers(t *testing.T) {
 					AddField("OAuthProvider", "google").
 					AddField("OAuthIdentifier", "viwer@theplant.jp").
 					AddField("status", "active").
-					AddField("Roles", "1").
-					AddField("Roles", "2").
-					AddField("Roles", "3").
+					// 角色字段按角色名提交（admin/crud_demo/user.go 的 WrapSaveFunc 按 name 查角色）
+					AddField("Roles", "Admin").
+					AddField("Roles", "Manager").
+					AddField("Roles", "Editor").
 					BuildEventFuncRequest()
 				return req
 			},
@@ -122,9 +124,10 @@ func TestUsers(t *testing.T) {
 					AddField("OAuthProvider", "google").
 					AddField("OAuthIdentifier", "viwer2@theplant.jp").
 					AddField("status", "active").
-					AddField("Roles", "1").
-					AddField("Roles", "2").
-					AddField("Roles", "3").
+					// 角色字段按角色名提交（admin/crud_demo/user.go 的 WrapSaveFunc 按 name 查角色）
+					AddField("Roles", "Admin").
+					AddField("Roles", "Manager").
+					AddField("Roles", "Editor").
 					BuildEventFuncRequest()
 				return req
 			},
@@ -147,7 +150,7 @@ func TestUsers(t *testing.T) {
 			ReqFunc: func() *http.Request {
 				userData.TruncatePut(dbr)
 				req := NewMultipartBuilder().
-					PageURL("/dialog-select-favor-posts").
+					PageURL("/posts"). // 专用选择器模型已移除；弹列表选记录统一走 presets.OpenListing（底层即对目标模型 OpenListingDialog）
 					EventFunc(actions.OpenListingDialog).
 					BuildEventFuncRequest()
 				return req

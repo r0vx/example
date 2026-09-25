@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/lib/pq"
+
 	. "github.com/r0vx/web/multipartestutils"
 	"github.com/r0vx/x/perm"
 	"github.com/theplant/gofixtures"
@@ -61,7 +63,7 @@ func TestProfile(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectPageBodyContainsInOrder: []string{`portal-name='ProfileCompo:`, `<v-avatar`, `text='Q'`, `/v-avatar>`, `qor@theplant.jp`, `Admin`},
+			ExpectPageBodyContainsInOrder: []string{`<shd-avatar`, `<shd-avatar-fallback>Q</shd-avatar-fallback>`, `qor@theplant.jp`, `My Profile`},
 		},
 		{
 			Name:  "rename",
@@ -105,8 +107,8 @@ func TestProfile(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectPortalUpdate0ContainsInOrder: []string{`Login Sessions`, `"title":"Time"`, `"title":"Device"`, `"title":"IP Address"`, `"title":"Status"`, `"title":"Last Active Time"`},
-			ExpectPortalUpdate0NotContains:     []string{`"title":"Location"`},
+			ExpectPortalUpdate0ContainsInOrder: []string{`Login Sessions`, `<shd-table-head>Time</shd-table-head>`, `<shd-table-head>Device</shd-table-head>`, `<shd-table-head>IP Address</shd-table-head>`, `<shd-table-head>Status</shd-table-head>`, `<shd-table-head>Last Active Time</shd-table-head>`},
+			ExpectPortalUpdate0NotContains:     []string{`<shd-table-head>Location</shd-table-head>`},
 		},
 		{
 			Name:  "login Sessions with table func",
@@ -154,7 +156,7 @@ func TestProfile(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectPortalUpdate0ContainsInOrder: []string{`Login Sessions`, `"title":"Time"`, `"title":"Device"`, `"title":"Location"`, `"title":"IP Address"`, `"title":"Status"`, `"title":"Last Active Time"`},
+			ExpectPortalUpdate0ContainsInOrder: []string{`Login Sessions`, `<shd-table-head>Time</shd-table-head>`, `<shd-table-head>Device</shd-table-head>`, `<shd-table-head>Location</shd-table-head>`, `<shd-table-head>IP Address</shd-table-head>`, `<shd-table-head>Status</shd-table-head>`, `<shd-table-head>Last Active Time</shd-table-head>`},
 		},
 		{
 			Name:  "logout one session",
@@ -261,6 +263,23 @@ func TestProfile(t *testing.T) {
 }
 
 func TestRoleEditor(t *testing.T) {
+	// example 的静态权限只放行 Admin（admin/perm.go），Editor 进不了角色列表。
+	// 这里给 Editor 一条「查看角色列表」的 DB 策略，才能验证非 Admin 看不到 Admin / Manager 的过滤（admin/config.go）。
+	// 权限策略在构造 handler 时一次性加载，所以必须在 TestHandler 之前插入。
+	admin.NewConfig(TestDB, false) // 建表（含 roles / default_db_policies），单独跑本测试时也成立
+	dbr, _ := TestDB.DB()
+	profileData.TruncatePut(dbr) // 先建角色：策略通过 ReferID 挂在角色上
+	policy := &perm.DefaultDBPolicy{
+		ReferID:   "3", // profileData 里 Editor 角色的 ID
+		Subject:   models.RoleEditor,
+		Effect:    perm.Allowed,
+		Actions:   pq.StringArray{"presets:list"},
+		Resources: pq.StringArray{"*:roles:*"},
+	}
+	if err := TestDB.Create(policy).Error; err != nil {
+		t.Fatal(err)
+	}
+
 	h := admin.TestHandler(TestDB, &models.User{
 		Model: gorm.Model{ID: 888},
 		Name:  "viwer@theplant.jp",
@@ -270,7 +289,10 @@ func TestRoleEditor(t *testing.T) {
 			},
 		},
 	})
-	dbr, _ := TestDB.DB()
+	// 策略已在构造 handler 时加载进内存；立刻删掉，避免外键挡住后续用例清空 roles 表
+	if err := TestDB.Unscoped().Delete(policy).Error; err != nil {
+		t.Fatal(err)
+	}
 
 	cases := []TestCase{
 		{
@@ -280,8 +302,9 @@ func TestRoleEditor(t *testing.T) {
 				profileData.TruncatePut(dbr)
 				return httptest.NewRequest("GET", "/roles", http.NoBody)
 			},
-			ExpectPageBodyContainsInOrder: []string{"Viewer", "Editor"},
-			ExpectPageBodyNotContains:     []string{"Manager", ">Admin<"},
+			// 断言表格单元格：侧边栏顶部的应用名也叫 Admin，裸 ">Admin<" 会误匹配
+			ExpectPageBodyContainsInOrder: []string{"<div>Viewer</div>", "<div>Editor</div>"},
+			ExpectPageBodyNotContains:     []string{"<div>Manager</div>", "<div>Admin</div>"},
 		},
 	}
 

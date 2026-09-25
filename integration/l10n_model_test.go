@@ -31,7 +31,7 @@ func TestL10nModel(t *testing.T) {
 			Debug: true,
 			ReqFunc: func() *http.Request {
 				l10nModelTestData.TruncatePut(dbr)
-				return httptest.NewRequest("GET", "/l-10-n-models", http.NoBody)
+				return httptest.NewRequest("GET", "/l10n-models", http.NoBody)
 			},
 			ExpectPageBodyContainsInOrder: []string{"New", "123"},
 		},
@@ -41,7 +41,7 @@ func TestL10nModel(t *testing.T) {
 			ReqFunc: func() *http.Request {
 				l10nModelTestData.TruncatePut(dbr)
 				req := NewMultipartBuilder().
-					PageURL("/l-10-n-models").
+					PageURL("/l10n-models").
 					Query(presets.ParamID, "1_Japan").
 					EventFunc(actions.Update).
 					AddField("Title", "234").

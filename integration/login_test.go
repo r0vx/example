@@ -34,7 +34,7 @@ func TestLogin(t *testing.T) {
 				req.Header.Add("accept-language", "en")
 				return req
 			},
-			ExpectPageBodyContainsInOrder: []string{`MATERIALPRO`, `邮箱`, `密码`, `忘记密码？`, `登录`},
+			ExpectPageBodyContainsInOrder: []string{`Welcome`, `Email`, `Password`, `Forget your password?`, `Sign in`},
 		},
 		{
 			Name:  "view by zh",
@@ -46,7 +46,7 @@ func TestLogin(t *testing.T) {
 				req.Header.Add("accept-language", "zh")
 				return req
 			},
-			ExpectPageBodyContainsInOrder: []string{`MATERIALPRO`, `Email`, `Password`, `Forget your password?`, `Sign in`},
+			ExpectPageBodyContainsInOrder: []string{`欢迎`, `邮箱`, `密码`, `忘记密码？`, `登录`},
 		},
 		{
 			Name:  "view by ja",
@@ -58,7 +58,8 @@ func TestLogin(t *testing.T) {
 				req.Header.Add("accept-language", "ja")
 				return req
 			},
-			ExpectPageBodyContainsInOrder: []string{`MATERIALPRO`, `Email`, `Password`, `Forget your password?`, `Sign in`},
+			// 登录模块的日文翻译已于 2025-07 移除（x/login 只注册 en / zh），ja 回退英文
+			ExpectPageBodyContainsInOrder: []string{`Welcome`, `Email`, `Password`, `Forget your password?`, `Sign in`},
 		},
 		{
 			Name:  "view by en (customized)",
@@ -117,7 +118,8 @@ func TestChangePassword(t *testing.T) {
 			ReqFunc: func() *http.Request {
 				return httptest.NewRequest("GET", "/auth/change-password", http.NoBody)
 			},
-			ExpectPageBodyContainsInOrder: []string{"Change your password", "Old password", "New password", "zxcvbn.js", "Re-enter new password"},
+			// 密码强度改为内置实现，不再引入外部 zxcvbn.js
+			ExpectPageBodyContainsInOrder: []string{"Change your password", "Old password", "New password", "Re-enter new password"},
 		},
 	}
 
