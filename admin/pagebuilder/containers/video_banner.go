@@ -36,7 +36,8 @@ func RegisterVideoBannerContainer(pb *pagebuilder.Builder) {
 		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*VideoBanner)
 			return VideoBannerBody(v, input)
-		})
+		}).
+		View() // 有主题走主题模板，无主题回退上面的 RenderFunc
 	vb.Model(&VideoBanner{}).Editing("AddTopSpace", "AddBottomSpace", "AnchorID", "VideoURL", "VideoCoverURL", "Heading", "Text", "LinkText", "Link")
 	vb.ConfigureEditing(func(eb *presets.EditingBuilder) {
 		eb.Field("Heading").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) HTMLComponent {

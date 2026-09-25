@@ -47,7 +47,8 @@ func RegisterHeadingContainer(pb *pagebuilder.Builder) {
 		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*Heading)
 			return HeadingBody(v, input)
-		})
+		}).
+		View() // 有主题走主题模板，无主题回退上面的 RenderFunc
 	vb.Model(&Heading{}).Editing("AddTopSpace", "AddBottomSpace", "AnchorID", "Heading", "FontColor", "BackgroundColor", "Link", "LinkText", "LinkDisplayOption", "Text")
 	vb.ConfigureEditing(func(eb *presets.EditingBuilder) {
 		eb.Field("FontColor").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) HTMLComponent {

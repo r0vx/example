@@ -26,7 +26,8 @@ func RegisterFooter(pb *pagebuilder.Builder) {
 		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			footer := obj.(*WebFooter)
 			return FooterTemplate(footer, input)
-		})
+		}).
+		View() // 有主题走主题模板，无主题回退上面的 RenderFunc
 
 	footer.Model(&WebFooter{}).Editing("EnglishUrl", "JapaneseUrl")
 }

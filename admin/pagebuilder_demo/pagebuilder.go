@@ -3,7 +3,10 @@ package pagebuilder_demo
 import (
 	"example/admin/pagebuilder/containers"
 	"example/models"
+	"example/themes"
+	"io/fs"
 	"log"
+	"os"
 
 	"github.com/r0vx/admin/activity"
 	"github.com/r0vx/admin/l10n"
@@ -84,12 +87,37 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; }
 		SEO(dependencies.SEO).
 		Publisher(dependencies.Publisher)
 
-	// 注册内置演示容器
+	// 官方示例主题：挂了 .View() 的容器走 themes/demo 的模板，其余照旧走 RenderFunc。
+	// 未设 PROD 时为开发模式：模板每次请求重新解析、静态资源不缓存。
+	pb.ThemeDev(os.Getenv("PROD") == "").
+		RegisterTheme("demo", demoThemeFS()).
+		DefaultTheme("demo")
+
+	registerDemoContainers(pb)
+
+	// 主题缺文件或模板语法错误在启动期暴露，不等到用户访问才 500
+	if err := pb.ValidateThemes(); err != nil {
+		log.Fatalf("主题校验失败: %v", err)
+	}
+
+	// 自动填充演示数据（表为空时）
+	seedPageBuilderDemo(db)
+	repairDemoRelationships(db, pb)
+
+	// 注册内置 Page 模型到 presets
+	b.Use(pb)
+
+	return pb
+}
+
+// registerDemoContainers 注册全部演示容器，测试复用同一份注册以校验示例主题。
+func registerDemoContainers(pb *pagebuilder.Builder) {
+	// 内置演示容器
 	registerHeroContainer(pb)
 	registerBannerContainer(pb)
 	registerRichTextContainer(pb)
 
-	// 注册示例容器（参考 r0vx pagebuilder example）
+	// 示例容器（参考 r0vx pagebuilder example）
 	containers.RegisterHeader(pb)
 	containers.RegisterFooter(pb)
 	containers.RegisterHeadingContainer(pb)
@@ -102,15 +130,23 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; }
 	containers.RegisterListContentContainer(pb)
 	containers.RegisterListContentLiteContainer(pb)
 	containers.RegisterListContentWithImageContainer(pb)
+}
 
-	// 自动填充演示数据（表为空时）
-	seedPageBuilderDemo(db)
-	repairDemoRelationships(db, pb)
+// demoThemeDir 示例主题在 example 根下的目录。
+const demoThemeDir = "themes/demo"
 
-	// 注册内置 Page 模型到 presets
-	b.Use(pb)
-
-	return pb
+// demoThemeFS 优先读磁盘上的示例主题（开发时改 HTML/CSS 刷新即见）；
+// 工作目录不是 example 根时读不到，回退到编译进二进制的副本。
+func demoThemeFS() fs.FS {
+	if _, err := os.Stat(demoThemeDir + "/theme.json"); err == nil {
+		return os.DirFS(demoThemeDir)
+	}
+	sub, err := fs.Sub(themes.FS, "demo")
+	if err != nil {
+		// embed 路径写死在 themes 包里，这里失败只可能是代码写错
+		panic(err)
+	}
+	return sub
 }
 
 // repairDemoRelationships safely relinks only unambiguous invalid demo rows.

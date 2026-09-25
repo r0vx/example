@@ -1,0 +1,8 @@
+{
+  "name": "demo",
+  "label": "Demo",
+  "version": "1.0.0",
+  "author": "r0vx",
+  "requiredContainers": ["Header", "VideoBanner", "Heading", "ListContent", "InNumbers", "BrandGrid", "Footer"],
+  "requiredViews": []
+}

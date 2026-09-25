@@ -63,7 +63,8 @@ func RegisterListContentContainer(pb *pagebuilder.Builder) {
 		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*ListContent)
 			return ListContentBody(v, input)
-		})
+		}).
+		View() // 有主题走主题模板，无主题回退上面的 RenderFunc
 	vb.Model(&ListContent{}).Editing("AddTopSpace", "AddBottomSpace", "AnchorID", "BackgroundColor", "Items", "Link", "LinkText", "LinkDisplayOption")
 	vb.ConfigureEditing(func(eb *presets.EditingBuilder) {
 		eb.Field("BackgroundColor").ComponentFunc(func(obj any, field *presets.FieldContext, ctx *web.EventContext) HTMLComponent {

@@ -1,0 +1,5 @@
+<section class="demo-brands" id="{{.Data.AnchorID}}">
+  {{range .Data.Brands}}
+    {{if .ImageURL}}<img src="{{imageURL .ImageURL 300 120}}" alt="{{.Name}}">{{else}}<span>{{.Name}}</span>{{end}}
+  {{end}}
+</section>

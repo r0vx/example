@@ -1,0 +1,9 @@
+<section class="demo-list" id="{{.Data.AnchorID}}">
+  {{range .Data.Items}}
+  <div class="demo-list__item">
+    <h3>{{.Heading}}</h3>
+    <p>{{.Text}}</p>
+    {{if .LinkText}}<a href="{{.Link}}">{{.LinkText}}</a>{{end}}
+  </div>
+  {{end}}
+</section>

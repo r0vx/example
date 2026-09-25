@@ -1,0 +1,21 @@
+/* 示例主题。注意：同一元素上并存两个 class 时，padding 短横写法
+   （padding: 2rem 0）会把另一个 class 的水平内边距清零，用 padding-block。 */
+:root { --demo-ink: #16181d; --demo-accent: #2f6feb; --demo-line: #e3e6ea; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.6 system-ui, sans-serif; color: var(--demo-ink); }
+img { display: block; max-width: 100%; }
+.demo-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; border-bottom: 1px solid var(--demo-line); }
+.demo-header--black { background: #000; color: #fff; }
+.demo-header--white { background: #fff; color: #000; }
+.demo-nav a { margin-left: 1.5rem; color: inherit; }
+.demo-banner { position: relative; min-height: 60vh; display: flex; align-items: center; }
+.demo-banner__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.6); }
+.demo-banner__body { position: relative; padding: 3rem 2rem; color: #fff; }
+.demo-banner__heading { font-size: clamp(2rem, 6vw, 4rem); margin: 0 0 1rem; }
+.demo-btn { display: inline-block; padding: .8rem 1.6rem; background: var(--demo-accent); color: #fff; text-decoration: none; }
+.demo-heading, .demo-list, .demo-numbers, .demo-brands { padding-block: 3rem; padding-inline: 2rem; max-width: 72rem; margin-inline: auto; }
+.demo-list__item { padding-block: 1.2rem; border-bottom: 1px solid var(--demo-line); }
+.demo-numbers__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1.5rem; }
+.demo-numbers__item b { display: block; font-size: 2.4rem; }
+.demo-brands { display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; }
+.demo-footer { padding: 2rem; border-top: 1px solid var(--demo-line); text-align: center; }

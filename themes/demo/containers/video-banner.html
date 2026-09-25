@@ -1,0 +1,8 @@
+<section class="demo-banner" id="{{.Data.AnchorID}}">
+  {{if .Data.VideoCoverURL}}<img class="demo-banner__bg" src="{{imageURL .Data.VideoCoverURL 2000 1000}}" alt="">{{end}}
+  <div class="demo-banner__body">
+    {{if .Data.Heading}}<h1 class="demo-banner__heading">{{.Data.Heading}}</h1>{{end}}
+    {{if .Data.Text}}<p class="demo-banner__text">{{.Data.Text}}</p>{{end}}
+    {{if .Data.LinkText}}<a class="demo-btn" href="{{.Data.Link}}">{{.Data.LinkText}}</a>{{end}}
+  </div>
+</section>

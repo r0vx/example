@@ -24,7 +24,8 @@ func RegisterHeader(pb *pagebuilder.Builder) {
 		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			header := obj.(*WebHeader)
 			return HeaderTemplate(header, input)
-		})
+		}).
+		View() // 有主题走主题模板，无主题回退上面的 RenderFunc
 
 	header.Model(&WebHeader{}).Editing("Color")
 	header.ConfigureEditing(func(eb *presets.EditingBuilder) {

@@ -64,6 +64,9 @@ func initLoginSessionBuilder(db *gorm.DB, pb *presets.Builder, ab *activity.Buil
 	loginBuilder := plogin.New(pb).
 		DB(db).
 		UserModel(&models.User{}).
+		// 免登录静态资产：默认的 /assets/ 加上前台主题资源 /theme-assets/
+		// （仍须 GET/HEAD + 静态后缀同时满足，见 x/login 中间件）
+		PublicAssetPrefixes([]string{"/assets/", "/theme-assets/"}).
 		Secret(loginSecret).
 		OAuthProviders(oauthProviders...).
 		HomeURLFunc(func(r *http.Request, user interface{}) string {

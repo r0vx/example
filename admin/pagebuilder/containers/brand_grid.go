@@ -57,7 +57,8 @@ func RegisterBrandGridContainer(pb *pagebuilder.Builder) {
 		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*BrandGrid)
 			return BrandGridBody(v, input)
-		})
+		}).
+		View() // 有主题走主题模板，无主题回退上面的 RenderFunc
 	vb.Model(&BrandGrid{}).Editing("AddTopSpace", "AddBottomSpace", "AnchorID", "Brands")
 	vb.ConfigureEditing(func(eb *presets.EditingBuilder) {
 		fb := pb.GetPresetsBuilder().NewFieldsBuilder(presets.WRITE).Model(&Brand{}).Only("ImageURL", "Name")

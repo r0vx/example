@@ -59,7 +59,8 @@ func RegisterInNumbersContainer(pb *pagebuilder.Builder) {
 		RenderFunc(func(obj any, input *pagebuilder.RenderInput, ctx *web.EventContext) HTMLComponent {
 			v := obj.(*InNumbers)
 			return InNumbersBody(v, input)
-		})
+		}).
+		View() // 有主题走主题模板，无主题回退上面的 RenderFunc
 	vb.Model(&InNumbers{}).Editing("AddTopSpace", "AddBottomSpace", "AnchorID", "Heading", "Items")
 	vb.ConfigureEditing(func(eb *presets.EditingBuilder) {
 		eb.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {

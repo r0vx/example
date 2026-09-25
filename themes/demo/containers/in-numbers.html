@@ -1,0 +1,6 @@
+<section class="demo-numbers" id="{{.Data.AnchorID}}">
+  {{if .Data.Heading}}<h2>{{.Data.Heading}}</h2>{{end}}
+  <div class="demo-numbers__grid">
+    {{range .Data.Items}}<div class="demo-numbers__item"><b>{{.Heading}}</b><span>{{.Text}}</span></div>{{end}}
+  </div>
+</section>

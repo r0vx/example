@@ -102,6 +102,8 @@ func Router(db *gorm.DB) http.Handler {
 	}))
 
 	mux.Handle("/page_builder/", c.pageBuilder)
+	// 示例主题静态资源；前台公开页要用，已在 auth.go 的 PublicAssetPrefixes 放行
+	mux.Handle("/theme-assets/", c.pageBuilder.ThemeAssetHandler("/theme-assets/"))
 
 	// 帮助中心公开站（免登录）：/help 与 /help/{slug}
 	if c.helpCenter != nil {
