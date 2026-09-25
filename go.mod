@@ -11,9 +11,9 @@ require (
 	github.com/lib/pq v1.10.9
 	// github.com/markbates/goth v1.81.0 // 移除OAuth依赖
 	github.com/ory/ladon v1.3.0 // indirect
-	github.com/r0vx/admin v1.6.0
-	github.com/r0vx/web v1.2.0
-	github.com/r0vx/x v1.6.0
+	github.com/r0vx/admin v1.6.6
+	github.com/r0vx/web v1.2.1
+	github.com/r0vx/x v1.6.9
 	github.com/samber/lo v1.51.0
 	github.com/spf13/cast v1.9.2
 	github.com/stretchr/testify v1.11.1
