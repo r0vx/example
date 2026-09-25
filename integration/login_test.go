@@ -58,7 +58,7 @@ func TestLogin(t *testing.T) {
 				req.Header.Add("accept-language", "ja")
 				return req
 			},
-			// 登录模块的日文翻译已于 2025-07 移除（x/login 只注册 en / zh），ja 回退英文
+			// 已不支持日语（支持语言只有 en / zh），ja 回退英文
 			ExpectPageBodyContainsInOrder: []string{`Welcome`, `Email`, `Password`, `Forget your password?`, `Sign in`},
 		},
 		{

@@ -248,7 +248,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	initPermission(b, db)
 
 	b.GetI18n().
-		SupportLanguages(language.English, language.SimplifiedChinese, language.Japanese).
+		SupportLanguages(language.English, language.SimplifiedChinese).
 		RegisterForModule(language.SimplifiedChinese, presets.ModelsI18nModuleKey, Messages_zh_CN_ModelsI18nModuleKey).
 		RegisterForModule(language.English, I18nExampleKey, Messages_en_US).
 		RegisterForModule(language.SimplifiedChinese, I18nExampleKey, Messages_zh_CN).
