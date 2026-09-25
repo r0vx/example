@@ -1,0 +1,34 @@
+# example 的持续集成：Go 编译 / 检查 / 测试
+# activity/tests 和 integration 用 testcontainers 起数据库，依赖 runner 自带的 Docker
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # web / x / admin 是私有仓库，go 下载时要走 git + token，不能走公共代理
+  GOPRIVATE: github.com/r0vx/*
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      # admin/media/vips 通过 cgo 依赖 libvips
+      - name: 安装 libvips
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libvips-dev
+      - name: 配置私有模块访问
+        env:
+          TOKEN: ${{ secrets.R0VX_READ_TOKEN }}
+        run: git config --global url."https://x-access-token:${TOKEN}@github.com/r0vx/".insteadOf "https://github.com/r0vx/"
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test ./...
