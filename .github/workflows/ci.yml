@@ -29,6 +29,17 @@ jobs:
         env:
           TOKEN: ${{ secrets.R0VX_READ_TOKEN }}
         run: git config --global url."https://x-access-token:${TOKEN}@github.com/r0vx/".insteadOf "https://github.com/r0vx/"
+      # commerce 不在上面令牌的仓库范围内：用它的只读部署密钥经 SSH 拉取（insteadOf 取最长匹配，只影响 commerce）
+      - name: 配置 commerce 访问（只读部署密钥）
+        env:
+          KEY: ${{ secrets.COMMERCE_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_commerce
+          chmod 600 ~/.ssh/id_commerce
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+          git config --global core.sshCommand "ssh -i ~/.ssh/id_commerce -o IdentitiesOnly=yes"
+          git config --global url."git@github.com:r0vx/commerce".insteadOf "https://github.com/r0vx/commerce"
       - run: go build ./...
       - run: go vet ./...
       - run: go test ./...
