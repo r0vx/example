@@ -228,8 +228,8 @@ github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 h1:o4JXh1EVt
 github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55/go.mod h1:OmDBASR4679mdNQnz2pUhc2G8CO2JrUAVFDRBDP/hJE=
 github.com/pquerna/otp v1.5.0 h1:NMMR+WrmaqXU4EzdGJEE1aUUI0AMRzsp96fFFWNPwxs=
 github.com/pquerna/otp v1.5.0/go.mod h1:dkJfzwRKNiegxyNb54X/3fLwhCynbMspSyWKnvi1AEg=
-github.com/r0vx/admin v1.9.0 h1:WEpF4+w3cOC8wRuaGsWIqO6hJe5+/mJQBfq0FcHsTxs=
-github.com/r0vx/admin v1.9.0/go.mod h1:Nabq3+oL6C+DvADnKXGl2JBwSJW+8h7ogHkxxo9GQ4E=
+github.com/r0vx/admin v1.9.1 h1:DLhDia4FFrd8pd/u5n4RmAaVuFqKnMvElnClamNdQuo=
+github.com/r0vx/admin v1.9.1/go.mod h1:Nabq3+oL6C+DvADnKXGl2JBwSJW+8h7ogHkxxo9GQ4E=
 github.com/r0vx/commerce v0.1.0 h1:Q0yxUH43dYWo0UHFsicXSBINPCq+sSV9FqN+/qzDRyI=
 github.com/r0vx/commerce v0.1.0/go.mod h1:aZqTLwhQfhVkfA9hA+CdcYasp5YCpvc3zkrHn22ShJ0=
 github.com/r0vx/htmlgo v1.1.0 h1:plRNaH823syTD9t+jCBgxIVOXdAUF+h4ZBWBNLs4Knc=
