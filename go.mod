@@ -11,9 +11,9 @@ require (
 	github.com/lib/pq v1.10.9
 	// github.com/markbates/goth v1.81.0 // 移除OAuth依赖
 	github.com/ory/ladon v1.3.0 // indirect
-	github.com/r0vx/admin v1.7.0
-	github.com/r0vx/web v1.2.1
-	github.com/r0vx/x v1.6.9
+	github.com/r0vx/admin v1.8.0
+	github.com/r0vx/web v1.3.0
+	github.com/r0vx/x v1.7.0
 	github.com/samber/lo v1.51.0
 	github.com/spf13/cast v1.9.2
 	github.com/stretchr/testify v1.11.1
@@ -41,7 +41,9 @@ require (
 require (
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/bojanz/currency v1.5.0 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
+	github.com/cockroachdb/apd/v3 v3.2.1 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4 // indirect
