@@ -34,6 +34,7 @@ require (
 require (
 	github.com/markbates/goth v1.81.0
 	github.com/pkg/errors v0.9.1
+	github.com/r0vx/commerce v0.1.0
 	github.com/theplant/htmltestingutils v0.0.0-20190423050759-0e06de7b6967
 	github.com/theplant/relay v0.8.0
 )
