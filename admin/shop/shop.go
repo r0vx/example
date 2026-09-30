@@ -17,7 +17,9 @@ import (
 	"github.com/r0vx/admin/presets"
 	"github.com/r0vx/admin/seo"
 	"github.com/r0vx/commerce"
+	"github.com/r0vx/commerce/payment"
 	"github.com/r0vx/commerce/payment/fake"
+	"github.com/r0vx/commerce/payment/stripe"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/i18n"
 	"github.com/r0vx/x/mail"
@@ -54,7 +56,7 @@ func Configure(db *gorm.DB, b *presets.Builder, pb *pagebuilder.Builder, l *l10n
 		RegisterForModule(language.German, pagebuilder.I18nThemeKeyPrefix+"demo", themeDE)
 
 	shop := commerce.New(db).
-		Payment(fake.New(storeURL + "/shop/fake-pay/")).
+		Payment(paymentProvider()).
 		Mailer(mail.Log(os.Stdout)).
 		OrderTokenSecret(secret).
 		OrderNumberPrefix("R-").
@@ -84,6 +86,25 @@ func Configure(db *gorm.DB, b *presets.Builder, pb *pagebuilder.Builder, l *l10n
 		log.Fatalf("shop: 配置校验: %v", err)
 	}
 	return &Shop{Builder: shop, i18n: ib, pb: pb}
+}
+
+// paymentProvider 设了 STRIPE_SECRET_KEY 时用 Stripe（只接受测试密钥，Webhook 密钥来自 STRIPE_WEBHOOK_SECRET，
+// 本地用 `stripe listen --forward-to 127.0.0.1:9510/shop/webhooks/stripe` 转发），否则用带模拟付款页的假支付。
+func paymentProvider() payment.Provider {
+	sk := os.Getenv("STRIPE_SECRET_KEY")
+	if sk == "" {
+		return fake.New(storeURL + "/shop/fake-pay/")
+	}
+	whsec := os.Getenv("STRIPE_WEBHOOK_SECRET")
+	if whsec == "" {
+		log.Fatal("shop: 设了 STRIPE_SECRET_KEY 还需要 STRIPE_WEBHOOK_SECRET")
+	}
+	p := stripe.New(sk, whsec)
+	if err := p.Validate(false); err != nil { // 演示只允许测试模式
+		log.Fatalf("shop: %v", err)
+	}
+	log.Printf("shop: 支付用 Stripe 测试模式")
+	return p
 }
 
 // Public 公开商店 handler：主题资源、商品页、/shop/*，其余交给 pagebuilder 页面（首页、法务页）。
