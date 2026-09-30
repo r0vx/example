@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{if .Page.Title}}{{.Page.Title}} · {{end}}{{t "ShopName"}}</title>
+<title>{{if .Page.Title}}{{.Page.Title}}{{else}}{{t "ShopName"}}{{end}}</title>
 <link rel="stylesheet" href="/theme-assets/theme.css">
 {{.Head}}
 </head>
