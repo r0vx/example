@@ -1,0 +1,6 @@
+{{define "totals"}}<dl class="shop-totals">
+  <dt>{{t "Subtotal"}}</dt><dd>{{.Subtotal}}</dd>
+  {{with .Shipping}}<dt>{{t "Shipping"}}{{with $.ShippingLabel}} ({{.}}){{end}}</dt><dd>{{.}}</dd>{{end}}
+  {{range .Adjustments}}{{if eq .Type "tax"}}{{if .Included}}<dt class="muted">{{t "InclTax"}} {{.RatePercent}}%</dt><dd class="muted">{{.Amount}}</dd>{{else}}<dt>{{t "Tax"}} {{.RatePercent}}%</dt><dd>{{.Amount}}</dd>{{end}}{{end}}{{end}}
+  <dt class="strong">{{t "Total"}}</dt><dd class="strong">{{.Total}}</dd>
+</dl>{{end}}

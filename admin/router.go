@@ -2,6 +2,7 @@ package admin
 
 import (
 	_ "embed"
+	"example/admin/shop"
 	"fmt"
 	"net/http"
 
@@ -76,6 +77,12 @@ func TestL18nHandler(db *gorm.DB) (http.Handler, Config) {
 
 // Router 创建主路由处理器
 func Router(db *gorm.DB) http.Handler {
+	h, _ := RouterAndShop(db)
+	return h
+}
+
+// RouterAndShop 创建主路由处理器，同时返回电商演示（公开商店由调用方在单独端口启动）。
+func RouterAndShop(db *gorm.DB) (http.Handler, *shop.Shop) {
 	c := NewConfig(db, true)
 
 	mux := http.NewServeMux()
@@ -164,5 +171,5 @@ func Router(db *gorm.DB) http.Handler {
 		securityMiddleware(),
 	)
 	cr.Mount("/", mux)
-	return cr
+	return cr, c.shop
 }

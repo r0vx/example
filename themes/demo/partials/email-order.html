@@ -1,0 +1,7 @@
+{{define "email-order"}}<table role="presentation" width="100%" cellpadding="6" style="border-collapse:collapse;font:14px/1.5 system-ui,sans-serif">
+  {{range .Lines}}<tr><td style="border-bottom:1px solid #e3e6ea">{{.Title}}{{if .Options}} · {{.Options}}{{end}}</td><td style="border-bottom:1px solid #e3e6ea">{{.Quantity}} × {{.UnitPrice}}</td><td align="right" style="border-bottom:1px solid #e3e6ea">{{.Total}}</td></tr>{{end}}
+  <tr><td colspan="2">{{t "Subtotal"}}</td><td align="right">{{.Subtotal}}</td></tr>
+  <tr><td colspan="2">{{t "Shipping"}} ({{.ShippingLabel}})</td><td align="right">{{.ShippingTotal}}</td></tr>
+  {{if .TaxIncluded}}<tr><td colspan="2" style="color:#667">{{t "InclTax"}} {{.TaxRatePercent}}%</td><td align="right" style="color:#667">{{.TaxTotal}}</td></tr>{{else}}<tr><td colspan="2">{{t "Tax"}}</td><td align="right">{{.TaxTotal}}</td></tr>{{end}}
+  <tr><td colspan="2"><strong>{{t "Total"}}</strong></td><td align="right"><strong>{{.Total}}</strong></td></tr>
+</table>{{end}}

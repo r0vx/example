@@ -1,0 +1,20 @@
+{{with .Data.Product}}<section class="shop-page shop-product">
+  <div class="shop-product__media">{{if .Image}}<img src="{{.Image}}" alt="{{.Title}}">{{else}}<div class="shop-card__ph"></div>{{end}}</div>
+  <div class="shop-product__info">
+    <h1>{{.Title}}</h1>
+    <p class="shop-price">{{with .Price}}{{.}}{{else}}{{t "NotAvailableHere"}}{{end}}{{with .CompareAt}} <s>{{.}}</s>{{end}}</p>
+    <div class="shop-desc">{{.Description}}</div>
+    {{if .Price}}<form method="post" action="{{$.Data.AddURL}}" class="shop-form">
+      <input type="hidden" name="csrf" value="{{$.Data.CSRFToken}}">
+      <fieldset class="shop-variants">{{$checked := false}}{{range .Variants}}
+        <label class="shop-variant{{if not .Available}} is-disabled{{end}}">
+          <input type="radio" name="variant_id" value="{{.ID}}"{{if not .Available}} disabled{{else if not $checked}} checked{{$checked = true}}{{end}}>
+          {{if .Label}}{{.Label}}{{else}}{{.SKU}}{{end}}{{with .Price}} · {{.}}{{end}}{{if not .Available}} · {{t "SoldOut"}}{{end}}
+        </label>{{end}}
+      </fieldset>
+      <label>{{t "Quantity"}} <input type="number" name="quantity" value="1" min="1" max="20"></label>
+      {{range $k, $v := $.Data.Errors}}<p class="shop-error">{{t $v}}</p>{{end}}
+      <button type="submit" class="demo-btn"{{if not .Available}} disabled{{end}}>{{t "AddToCart"}}</button>
+    </form>{{end}}
+  </div>
+</section>{{end}}

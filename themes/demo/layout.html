@@ -3,9 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Page.Title}}</title>
+<title>{{if .Page.Title}}{{.Page.Title}} · {{end}}{{t "ShopName"}}</title>
 <link rel="stylesheet" href="/theme-assets/theme.css">
 {{.Head}}
 </head>
-<body>{{.Content}}{{.BodyEnd}}</body>
+<body>
+{{with .Site}}<div class="shop-bar">
+  <a class="shop-bar__brand" href="{{url "/"}}">{{t "ShopName"}}</a>
+  <nav class="shop-bar__nav"><a href="{{url "/products"}}">{{t "NavProducts"}}</a></nav>
+  <form class="shop-bar__country" method="post" action="{{.MarketURL}}">
+    <input type="hidden" name="csrf" value="{{.CSRFToken}}">
+    <input type="hidden" name="return" value="{{url $.Page.URL}}">
+    <label>{{t "Country"}}
+      <select name="country" onchange="this.form.submit()">{{range .Countries}}<option value="{{.Code}}"{{if .Current}} selected{{end}}>{{.Code}}</option>{{end}}</select>
+    </label>
+    <noscript><button type="submit">OK</button></noscript>
+    <span class="shop-bar__currency">{{.Market.Currency}}</span>
+  </form>
+  <span class="shop-bar__langs">{{range .Languages}}<a href="{{.URL}}"{{if .Current}} aria-current="true"{{end}}>{{.Code}}</a>{{end}}</span>
+  <a class="shop-bar__cart" href="{{.CartURL}}">{{t "NavCart"}} ({{.CartCount}})</a>
+</div>{{end}}
+<main>{{.Content}}</main>
+<footer class="shop-footer">
+  <a href="{{url "/legal/terms"}}">{{t "LegalTerms"}}</a>
+  <a href="{{url "/legal/privacy"}}">{{t "LegalPrivacy"}}</a>
+  <a href="{{url "/legal/returns"}}">{{t "LegalReturns"}}</a>
+  <a href="{{url "/legal/shipping"}}">{{t "LegalShipping"}}</a>
+  <a href="{{url "/legal/imprint"}}">{{t "LegalImprint"}}</a>
+</footer>
+{{.BodyEnd}}
+</body>
 </html>

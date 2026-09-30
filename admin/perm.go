@@ -17,6 +17,10 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 		perm.New().Policies(
 			perm.PolicyFor(perm.Anybody).WhoAre(perm.Denied).ToDo(perm.Denied).On(perm.Anything),
 			perm.PolicyFor(models.RoleAdmin).WhoAre(perm.Allowed).ToDo(perm.Anything).On(perm.Anything),
+			// 电商演示（admin/shop）：Manager 可管理「Shop」菜单下全部页面
+			perm.PolicyFor(models.RoleManager).WhoAre(perm.Allowed).ToDo(perm.Anything).On(
+				"*:commerce_orders:*", "*:commerce_products:*", "*:commerce_product_contents:*",
+				"*:commerce_markets:*", "*:commerce_shipping_methods:*", "*:commerce_deliveries:*", "*:mg_shop:*"),
 		// Admin 超管放行（静态兜底，与 DB 策略叠加；Denied 仍可覆盖 Allow）。
 		// 注意：seo 编辑权限闸 editIsAllowed 接线后（移植回归修复），启用 perm 的项目
 		// 必须有能匹配 `:seo:seo_settings:` + `perm_seo_edit` 的 allow 策略，否则 SEO 不可编辑。

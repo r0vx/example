@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof" // 添加 pprof 支持
@@ -12,7 +13,9 @@ import (
 )
 
 func main() {
-	h := admin.Router(admin.ConnectDB())
+	h, shopDemo := admin.RouterAndShop(admin.ConnectDB())
+	// 电商演示的公开商店（与后台分开端口：后台占了根路径）
+	shopDemo.Start(context.Background(), osenv.Get("STORE_ADDR", "The address to serve the public store on", "127.0.0.1:9510"))
 
 	host := osenv.Get("HOST", "The host to serve the admin on", "127.0.0.1")
 	port := osenv.Get("PORT", "The port to serve the admin on", "9500")

@@ -1,0 +1,8 @@
+<!doctype html><html lang="{{.Page.Locale}}"><head><meta charset="utf-8"><title>{{t "OrderCancelledSubject"}} {{.Data.Order.Number}}</title></head>
+<body style="margin:0;padding:24px;background:#f6f7f9;font:14px/1.5 system-ui,sans-serif;color:#16181d">
+<div style="max-width:560px;margin:0 auto;background:#fff;padding:24px">
+<h1 style="font-size:20px">{{t "OrderCancelledSubject"}} {{.Data.Order.Number}}</h1>
+<p>{{t "OrderCancelledIntro"}}</p>
+{{template "email-order" .Data.Order}}
+<p><a href="{{.Data.Order.URL}}">{{t "ViewOrder"}}</a></p>
+</div></body></html>

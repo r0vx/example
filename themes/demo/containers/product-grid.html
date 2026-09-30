@@ -1,0 +1,4 @@
+<section class="shop-page">
+  {{with .Data.Title}}<h2>{{.}}</h2>{{end}}
+  <div class="shop-grid">{{range .Data.Products}}{{template "product-card" .}}{{end}}</div>
+</section>

@@ -1,0 +1,14 @@
+{{with .Data.Order}}<section class="shop-page">
+  <h1>{{t "OrderNumber"}} {{.Number}}</h1>
+  <p class="shop-status">{{t (print "Status_" .Status)}} · {{t (print "Payment_" .PaymentStatus)}} · {{t (print "Fulfillment_" .FulfillmentStatus)}}</p>
+  <table class="shop-table">{{range .Lines}}<tr><td>{{.Title}}{{if .Options}}<br><small>{{.Options}}</small>{{end}}</td><td>{{.Quantity}} × {{.UnitPrice}}</td><td class="num">{{.Total}}</td></tr>{{end}}</table>
+  <dl class="shop-totals">
+    <dt>{{t "Subtotal"}}</dt><dd>{{.Subtotal}}</dd>
+    <dt>{{t "Shipping"}} ({{.ShippingLabel}})</dt><dd>{{.ShippingTotal}}</dd>
+    {{if .TaxIncluded}}<dt class="muted">{{t "InclTax"}} {{.TaxRatePercent}}%</dt><dd class="muted">{{.TaxTotal}}</dd>{{else}}<dt>{{t "Tax"}}</dt><dd>{{.TaxTotal}}</dd>{{end}}
+    <dt class="strong">{{t "Total"}}</dt><dd class="strong">{{.Total}}</dd>
+  </dl>
+  <h2>{{t "ShipTo"}}</h2>
+  <p>{{.Address.Name}}<br>{{.Address.Line1}}{{with .Address.Line2}}<br>{{.}}{{end}}<br>{{.Address.PostalCode}} {{.Address.City}}<br>{{.Address.Country}}</p>
+  {{if .Fulfillments}}<h2>{{t "Shipments"}}</h2>{{range .Fulfillments}}<p>{{.Carrier}} {{.TrackingNumber}}{{with .TrackingURL}} · <a href="{{.}}">{{t "Track"}}</a>{{end}}</p>{{end}}{{end}}
+</section>{{end}}

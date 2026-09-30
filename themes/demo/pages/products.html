@@ -1,0 +1,6 @@
+<section class="shop-page">
+  <h1>{{t "NavProducts"}}</h1>
+  <div class="shop-grid">
+    {{range .Data.Products}}{{template "product-card" .}}{{else}}<p>{{t "NoProducts"}}</p>{{end}}
+  </div>
+</section>

@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"embed"
+	"example/admin/shop"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -80,6 +81,7 @@ type Config struct {
 	completeHandler     http.Handler        // autocomplete API 处理器
 	helpCenter          *helpcenter.Builder // 帮助中心（公开站 handler + admin CRUD）
 	sseHub              *sse.Hub            // SSE 推送中心
+	shop                *shop.Shop          // 电商演示（公开商店由 main 单独端口启动）
 }
 
 func (c *Config) GetPresetsBuilder() *presets.Builder {
@@ -294,6 +296,9 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 		RegisterLocales("International", "international", "International", l10n.InternationalSvg).
 		RegisterLocales("Japan", "jp", "Japan", l10n.JapanSvg).
 		RegisterLocales("China", "cn", "China", l10n.ChinaSvg).
+		// 电商演示（admin/shop）的商品、配送方式文案与公开商店页面按语言标签存（与公开站 /en、/de 一致）
+		RegisterLocales("en", "en", "English", l10n.InternationalSvg).
+		RegisterLocales("de", "de", "Deutsch", l10n.InternationalSvg).
 		SupportLocalesFunc(func(R *http.Request) []string {
 			return l10nBuilder.GetSupportLocaleCodes()[:]
 		})
@@ -391,6 +396,9 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	)
 
 	configListModel(b, ab, publisher)
+
+	// 电商演示：后台「Shop」菜单 + 公开商店（main 里单独端口启动）
+	shopDemo := shop.Configure(db, b, pageBuilder, l10nBuilder, ab)
 
 	microb := microsite.New(db).AutoMigrate().Publisher(publisher)
 
@@ -511,6 +519,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 		completeHandler:     completeHandler,
 		helpCenter:          helpCenterBuilder,
 		sseHub:              sseHub,
+		shop:                shopDemo,
 	}
 }
 
@@ -590,6 +599,7 @@ func configMenuOrder(b *presets.Builder) {
 			"customers",
 			"membership-cards",
 		).Icon("shopping-cart"),
+		b.MenuGroup("Shop"), // 电商演示，子项由 commerce 后台注册
 		b.MenuGroup("Content").SubItems(
 			"posts",        // Post → 文章
 			"articles",     // helpcenter Article → 帮助文档

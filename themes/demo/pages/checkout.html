@@ -1,0 +1,28 @@
+<section class="shop-page shop-checkout">
+  <h1>{{t "Checkout"}}</h1>
+  {{if .Data.Switched}}<p class="shop-notice">{{t "MarketSwitched"}}</p>{{end}}
+  {{range .Data.OutOfStock}}<p class="shop-error">{{.SKU}}: {{t "OnlyLeft"}} {{.Available}}</p>{{end}}
+  {{with index .Data.Errors "Form"}}<p class="shop-error">{{t .}}</p>{{end}}
+  <form method="post" action="{{.Data.ActionURL}}" class="shop-form">
+    <input type="hidden" name="csrf" value="{{.Data.CSRFToken}}">
+    {{with .Data.Values}}
+    <label>{{t "Email"}} <input type="email" name="email" value="{{.Email}}" required></label>{{with index $.Data.Errors "Email"}}<p class="shop-error">{{t .}}</p>{{end}}
+    <label>{{t "Name"}} <input name="name" value="{{.Name}}" required></label>{{with index $.Data.Errors "Name"}}<p class="shop-error">{{t .}}</p>{{end}}
+    <label>{{t "Address"}} <input name="line1" value="{{.Line1}}" required></label>{{with index $.Data.Errors "Line1"}}<p class="shop-error">{{t .}}</p>{{end}}
+    <label>{{t "Address2"}} <input name="line2" value="{{.Line2}}"></label>
+    <div class="shop-row">
+      <label>{{t "PostalCode"}} <input name="postal_code" value="{{.PostalCode}}" required></label>
+      <label>{{t "City"}} <input name="city" value="{{.City}}" required></label>
+    </div>{{with index $.Data.Errors "PostalCode"}}<p class="shop-error">{{t .}}</p>{{end}}{{with index $.Data.Errors "City"}}<p class="shop-error">{{t .}}</p>{{end}}
+    <label>{{t "Country"}} <select name="country">{{$c := .Country}}{{range $.Data.Countries}}<option value="{{.}}"{{if eq . $c}} selected{{end}}>{{.}}</option>{{end}}</select></label>{{with index $.Data.Errors "Country"}}<p class="shop-error">{{t .}}</p>{{end}}
+    <label>{{t "Phone"}} <input name="phone" value="{{.Phone}}"></label>
+    {{end}}
+    <fieldset><legend>{{t "ShippingMethod"}}</legend>
+      {{range .Data.ShippingMethods}}<label class="shop-variant"><input type="radio" name="shipping_method_id" value="{{.ID}}"{{if .Selected}} checked{{end}}> {{.Label}} · {{if .Free}}{{t "Free"}}{{else}}{{.Price}}{{end}}{{with .Description}}<br><small>{{.}}</small>{{end}}</label>{{end}}
+      {{with index .Data.Errors "ShippingMethodID"}}<p class="shop-error">{{t .}}</p>{{end}}
+    </fieldset>
+    {{template "totals" .Data.Cart}}
+    <button type="submit" class="demo-btn">{{t "PayNow"}}</button>
+  </form>
+  <p><a href="{{.Data.CartURL}}">{{t "BackToCart"}}</a></p>
+</section>

@@ -1,0 +1,4 @@
+{{if .Data.Refresh}}<meta http-equiv="refresh" content="2">{{end}}
+<section class="shop-page">
+  {{if eq .Data.Status "processing"}}<h1>{{t "Processing"}}</h1><p>{{t "ProcessingHint"}}</p>{{else}}<h1>{{t "PaymentExpired"}}</h1><p><a href="{{.Data.CartURL}}">{{t "BackToCart"}}</a></p>{{end}}
+</section>

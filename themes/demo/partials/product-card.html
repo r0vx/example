@@ -1,0 +1,5 @@
+{{define "product-card"}}<a class="shop-card" href="{{.URL}}">
+  {{if .Image}}<img src="{{.Image}}" alt="{{.Title}}">{{else}}<div class="shop-card__ph"></div>{{end}}
+  <span class="shop-card__title">{{.Title}}</span>
+  <span class="shop-card__price">{{with .Price}}{{.}}{{end}}{{with .CompareAt}} <s>{{.}}</s>{{end}}{{if not .Available}} · {{t "SoldOut"}}{{end}}</span>
+</a>{{end}}

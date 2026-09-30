@@ -1,0 +1,16 @@
+<section class="shop-page">
+  <h1>{{t "NavCart"}}</h1>
+  {{with .Data.Cart}}{{if .Empty}}<p>{{t "CartEmpty"}} <a href="{{url "/products"}}">{{t "ContinueShopping"}}</a></p>{{else}}
+  <table class="shop-table">
+    {{range .Lines}}<tr{{if not .Sellable}} class="is-disabled"{{end}}>
+      <td><a href="{{.ProductURL}}">{{.Title}}</a>{{if .Options}}<br><small>{{.Options}}</small>{{end}}{{if not .Sellable}}<br><small class="shop-error">{{t "NotAvailableHere"}}</small>{{end}}</td>
+      <td>{{with .UnitPrice}}{{.}}{{end}}</td>
+      <td><form method="post" action="{{.UpdateURL}}" class="shop-qty"><input type="hidden" name="csrf" value="{{$.Data.CSRFToken}}"><input type="number" name="quantity" value="{{.Quantity}}" min="0" max="20"><button type="submit">{{t "Update"}}</button></form></td>
+      <td class="num">{{with .Total}}{{.}}{{end}}</td>
+    </tr>{{end}}
+  </table>
+  {{template "totals" .}}
+  {{range $k, $v := $.Data.Errors}}<p class="shop-error">{{t $v}}</p>{{end}}
+  {{if .HasUnsellable}}<p class="shop-error">{{t "ErrUnsellable"}}</p>{{else}}<a class="demo-btn" href="{{$.Data.CheckoutURL}}">{{t "Checkout"}}</a>{{end}}
+  {{end}}{{end}}
+</section>
