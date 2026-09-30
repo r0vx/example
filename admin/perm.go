@@ -21,6 +21,14 @@ func initPermission(b *presets.Builder, db *gorm.DB) {
 			perm.PolicyFor(models.RoleManager).WhoAre(perm.Allowed).ToDo(perm.Anything).On(
 				"*:commerce_orders:*", "*:commerce_products:*", "*:commerce_product_contents:*",
 				"*:commerce_markets:*", "*:commerce_shipping_methods:*", "*:commerce_deliveries:*", "*:mg_shop:*"),
+			// 三种角色（admin/shop.DemoAccounts）：运营管商品、市场与运费，客服管订单与事件投递，
+			// 译者只进商品与文案——语言被限定为德语（config.go SupportLocalesFunc），结构类操作只在默认语言英语下出现，自然只剩翻译
+			perm.PolicyFor(models.RoleShopOperator).WhoAre(perm.Allowed).ToDo(perm.Anything).On(
+				"*:commerce_products:*", "*:commerce_product_contents:*", "*:commerce_markets:*", "*:commerce_shipping_methods:*", "*:mg_shop:*"),
+			perm.PolicyFor(models.RoleShopSupport).WhoAre(perm.Allowed).ToDo(perm.Anything).On(
+				"*:commerce_orders:*", "*:commerce_deliveries:*", "*:mg_shop:*"),
+			perm.PolicyFor(models.RoleShopTranslator).WhoAre(perm.Allowed).ToDo(perm.Anything).On(
+				"*:commerce_products:*", "*:commerce_product_contents:*", "*:mg_shop:*"),
 		// Admin 超管放行（静态兜底，与 DB 策略叠加；Denied 仍可覆盖 Allow）。
 		// 注意：seo 编辑权限闸 editIsAllowed 接线后（移植回归修复），启用 perm 的项目
 		// 必须有能匹配 `:seo:seo_settings:` + `perm_seo_edit` 的 allow 策略，否则 SEO 不可编辑。

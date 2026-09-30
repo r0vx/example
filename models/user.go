@@ -14,6 +14,11 @@ const (
 	RoleEditor  = "Editor"
 	RoleViewer  = "Viewer"
 
+	// 电商演示（admin/shop）的三种角色：运营管商品与市场、客服管订单、译者只翻译德语文案
+	RoleShopOperator   = "ShopOperator"
+	RoleShopSupport    = "ShopSupport"
+	RoleShopTranslator = "ShopTranslator"
+
 	OAuthProviderGoogle          = "google"
 	OAuthProviderMicrosoftOnline = "microsoftonline"
 	OAuthProviderGithub          = "github"

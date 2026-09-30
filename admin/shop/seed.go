@@ -16,21 +16,54 @@ import (
 	"gorm.io/gorm"
 )
 
-// seed 市场表为空时建演示数据：US / EU / UK 三个市场与配送方式、四件商品（一件只在 US / UK 卖、一件草稿）、
-// 英德两版首页（含精选商品）与法务页占位。全部经领域服务写入。
+// seed 建演示数据：US / EU / UK 三个市场与配送方式、四件商品（一件只在 US / UK 卖、一件草稿）、
+// 英德两版首页（含精选商品）与法务页占位。三块各自缺了才建（别处清了某张表也能补回），全部经领域服务写入。
 func seed(db *gorm.DB) error {
-	var n int64
-	if err := db.Model(&market.Market{}).Count(&n).Error; err != nil || n > 0 {
-		return err
-	}
 	ctx := context.Background()
 	return db.Transaction(func(tx *gorm.DB) error {
 		s := &seeder{ctx: ctx, db: tx}
-		s.markets()
-		s.products()
-		s.pages()
+		if s.missing(&market.Market{}, "code = ?", "US") {
+			s.markets()
+		} else {
+			s.loadMarkets()
+		}
+		if s.missing(&catalog.ProductContent{}, "handle = ?", "classic-tee") {
+			s.products()
+		} else {
+			s.findFeatured()
+		}
+		if s.missing(&pagebuilder.Page{}, "slug = ? AND locale_code = ?", "/", "en") {
+			s.pages()
+		}
 		return s.err
 	})
+}
+
+// missing 表里没有符合条件的行。
+func (s *seeder) missing(model any, query string, args ...any) bool {
+	var n int64
+	s.do(s.db.Model(model).Where(query, args...).Count(&n).Error)
+	return s.err == nil && n == 0
+}
+
+// loadMarkets 市场已存在时取回三个演示市场（建商品标价要用）；运营改掉的就当没有，不在那里标价。
+func (s *seeder) loadMarkets() {
+	for code, dst := range map[string]**market.Market{"US": &s.us, "EU": &s.eu, "UK": &s.uk} {
+		var m market.Market
+		if s.db.Where("code = ?", code).First(&m).Error == nil {
+			*dst = &m
+		}
+	}
+}
+
+// findFeatured 商品已存在时按 handle 找回精选商品（首页要用）。
+func (s *seeder) findFeatured() {
+	for _, h := range []string{"classic-tee", "ceramic-mug", "canvas-tote", "hoodie"} {
+		var c catalog.ProductContent
+		if err := s.db.Where("handle = ? AND locale_code = ?", h, "en").First(&c).Error; err == nil {
+			s.featured = append(s.featured, c.ID)
+		}
+	}
 }
 
 // seeder 演示数据：第一个错误之后的步骤都跳过。
@@ -104,7 +137,7 @@ func (s *seeder) prices(variantID uint, us, eu, uk *int64, euCompare *int64) {
 		amount  *int64
 		compare *int64
 	}{{s.us, us, nil}, {s.eu, eu, euCompare}, {s.uk, uk, nil}} {
-		if p.amount != nil && s.err == nil {
+		if p.m != nil && p.amount != nil && s.err == nil {
 			s.do(catalog.SetPrice(s.ctx, s.db, variantID, p.m.ID, *p.amount, p.compare))
 		}
 	}

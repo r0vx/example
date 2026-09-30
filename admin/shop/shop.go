@@ -15,6 +15,7 @@ import (
 	"github.com/r0vx/admin/l10n"
 	"github.com/r0vx/admin/pagebuilder"
 	"github.com/r0vx/admin/presets"
+	"github.com/r0vx/admin/seo"
 	"github.com/r0vx/commerce"
 	"github.com/r0vx/commerce/payment/fake"
 	"github.com/r0vx/web"
@@ -40,7 +41,8 @@ type Shop struct {
 }
 
 // Configure 装配商店：迁移表、注册后台与精选商品容器、给主题接全站数据，表空时建演示数据。
-func Configure(db *gorm.DB, b *presets.Builder, pb *pagebuilder.Builder, l *l10n.Builder, ab *activity.Builder) *Shop {
+// demoPassword 非空时顺带建三种角色的演示账号（见 DemoAccounts）。
+func Configure(db *gorm.DB, b *presets.Builder, pb *pagebuilder.Builder, l *l10n.Builder, ab *activity.Builder, sb *seo.Builder, demoPassword string) *Shop {
 	secret := []byte(tokenSecret)
 	if len(secret) < 32 {
 		log.Printf("shop: 未设置 SHOP_ORDER_TOKEN_SECRET（≥ 32 字节），本次启动随机生成（重启后旧订单链接失效）")
@@ -62,6 +64,7 @@ func Configure(db *gorm.DB, b *presets.Builder, pb *pagebuilder.Builder, l *l10n
 		DefaultCountry("US").
 		L10n(l).
 		Activity(ab).
+		SEO(sb).
 		StripeTestMode(true)
 	if err := shop.Migrate(); err != nil {
 		log.Fatalf("shop: 迁移: %v", err)
@@ -73,6 +76,9 @@ func Configure(db *gorm.DB, b *presets.Builder, pb *pagebuilder.Builder, l *l10n
 	pb.SiteFunc(func(ctx *web.EventContext) (any, error) { return shop.SiteData(ctx.R) })
 	if err := seed(db); err != nil {
 		log.Fatalf("shop: 演示数据: %v", err)
+	}
+	if err := seedDemoUsers(db, demoPassword); err != nil {
+		log.Fatalf("shop: 演示账号: %v", err)
 	}
 	if err := shop.Validate(); err != nil {
 		log.Fatalf("shop: 配置校验: %v", err)

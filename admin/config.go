@@ -88,6 +88,11 @@ func (c *Config) GetPresetsBuilder() *presets.Builder {
 	return c.pb
 }
 
+// Shop 电商演示（公开商店 handler、事件总线等）。
+func (c Config) Shop() *shop.Shop {
+	return c.shop
+}
+
 func (c *Config) GetLoginSessionBuilder() *plogin.SessionBuilder {
 	return c.loginSessionBuilder
 }
@@ -300,6 +305,13 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 		RegisterLocales("en", "en", "English", l10n.InternationalSvg).
 		RegisterLocales("de", "de", "Deutsch", l10n.InternationalSvg).
 		SupportLocalesFunc(func(R *http.Request) []string {
+			// 电商演示的译者只翻译德语（spec §9：译者限定语言经 SupportLocalesFunc）
+			if u := getCurrentUser(R); u != nil {
+				roles := u.GetRoles()
+				if slices.Contains(roles, models.RoleShopTranslator) && !slices.Contains(roles, models.RoleAdmin) {
+					return []string{"de"}
+				}
+			}
 			return l10nBuilder.GetSupportLocaleCodes()[:]
 		})
 	publisher := publish.New(db, PublishStorage).
@@ -398,7 +410,7 @@ func NewConfig(db *gorm.DB, enableWork bool, opts ...ConfigOption) Config {
 	configListModel(b, ab, publisher)
 
 	// 电商演示：后台「Shop」菜单 + 公开商店（main 里单独端口启动）
-	shopDemo := shop.Configure(db, b, pageBuilder, l10nBuilder, ab)
+	shopDemo := shop.Configure(db, b, pageBuilder, l10nBuilder, ab, seoBuilder, loginInitialUserPassword)
 
 	microb := microsite.New(db).AutoMigrate().Publisher(publisher)
 
