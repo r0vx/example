@@ -77,7 +77,24 @@ func TestPost(t *testing.T) {
 					BuildEventFuncRequest()
 				return req
 			},
-			ExpectRunScriptContainsInOrder: []string{`Title Is Required`, `TitleWithSlug Is Required`},
+			// field_errors 是 map，JSON 里键的先后不固定：两个字段错误分开断言，不要求顺序
+			ExpectRunScriptContainsInOrder: []string{`"Title":["Title Is Required"]`},
+		},
+		{
+			Name:  "Post Validate Event (slug)",
+			Debug: true,
+			ReqFunc: func() *http.Request {
+				admin.PostsExampleData.TruncatePut(dbr)
+				req := multipartestutils.NewMultipartBuilder().
+					PageURL("/posts").
+					Query(presets.ParamID, "1_2023-01-05-v01").
+					EventFunc(actions.Validate).
+					AddField("Title", "").
+					AddField("TitleWithSlug", "").
+					BuildEventFuncRequest()
+				return req
+			},
+			ExpectRunScriptContainsInOrder: []string{`"TitleWithSlug":["TitleWithSlug Is Required"]`},
 		},
 		{
 			Name:  "Post Update Validate",
