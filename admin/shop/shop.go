@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/r0vx/admin/activity"
 	"github.com/r0vx/admin/l10n"
@@ -18,6 +19,7 @@ import (
 	"github.com/r0vx/admin/seo"
 	"github.com/r0vx/commerce"
 	"github.com/r0vx/commerce/payment"
+	"github.com/r0vx/commerce/payment/antom"
 	"github.com/r0vx/commerce/payment/fake"
 	"github.com/r0vx/commerce/payment/stripe"
 	"github.com/r0vx/web"
@@ -88,9 +90,31 @@ func Configure(db *gorm.DB, b *presets.Builder, pb *pagebuilder.Builder, l *l10n
 	return &Shop{Builder: shop, i18n: ib, pb: pb}
 }
 
-// paymentProvider 设了 STRIPE_SECRET_KEY 时用 Stripe（只接受测试密钥，Webhook 密钥来自 STRIPE_WEBHOOK_SECRET，
-// 本地用 `stripe listen --forward-to 127.0.0.1:9510/shop/webhooks/stripe` 转发），否则用带模拟付款页的假支付。
+// paymentProvider 选支付服务商（演示只允许沙箱 / 测试模式）：
+//   - 设了 ANTOM_CLIENT_ID：Antom（国际支付宝）沙箱，另需 ANTOM_MERCHANT_PRIVATE_KEY、ANTOM_PUBLIC_KEY（Antom Dashboard 里的
+//     不带头 base64 或 PEM），可选 ANTOM_GATEWAY、ANTOM_SETTLEMENT_CURRENCY；Antom 回调到 STORE_URL/shop/webhooks/antom（须公网可达）。
+//   - 设了 STRIPE_SECRET_KEY：Stripe 测试模式，Webhook 密钥来自 STRIPE_WEBHOOK_SECRET，
+//     本地用 `stripe listen --forward-to 127.0.0.1:9510/shop/webhooks/stripe` 转发。
+//   - 都没设：带模拟付款页的假支付。
 func paymentProvider() payment.Provider {
+	if id := os.Getenv("ANTOM_CLIENT_ID"); id != "" {
+		if !strings.HasPrefix(id, "SANDBOX_") {
+			log.Fatal("shop: 演示只允许 Antom 沙箱（client-id 以 SANDBOX_ 开头）")
+		}
+		var opts []antom.Option
+		if g := os.Getenv("ANTOM_GATEWAY"); g != "" {
+			opts = append(opts, antom.WithBaseURL(g))
+		}
+		if c := os.Getenv("ANTOM_SETTLEMENT_CURRENCY"); c != "" {
+			opts = append(opts, antom.WithSettlementCurrency(c))
+		}
+		p, err := antom.New(id, os.Getenv("ANTOM_MERCHANT_PRIVATE_KEY"), os.Getenv("ANTOM_PUBLIC_KEY"), storeURL+"/shop/webhooks/antom", opts...)
+		if err != nil {
+			log.Fatalf("shop: %v", err)
+		}
+		log.Printf("shop: 支付用 Antom 沙箱")
+		return p
+	}
 	sk := os.Getenv("STRIPE_SECRET_KEY")
 	if sk == "" {
 		return fake.New(storeURL + "/shop/fake-pay/")
