@@ -14,7 +14,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/r0vx/admin v1.9.1
 	github.com/r0vx/commerce v0.3.0
-	github.com/r0vx/htmlgo v1.1.0
+	github.com/r0vx/htmlgo v1.1.1
 	github.com/r0vx/web v1.3.0
 	github.com/r0vx/x v1.8.0
 	github.com/samber/lo v1.51.0
