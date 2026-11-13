@@ -8,10 +8,10 @@ import (
 	"example/models"
 
 	"github.com/r0vx/admin/dashboard"
+	h "github.com/r0vx/htmlgo"
 	"github.com/r0vx/web"
 	"github.com/r0vx/x/ui/shadcn"
 	"github.com/r0vx/x/ui/unovis"
-	h "github.com/r0vx/htmlgo"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +19,7 @@ import (
 func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 	return dashboard.New(
 		// 统计卡片：商品总数
-		dashboard.Stat("商品总数").
+		dashboard.Stat("Total Products").
 			Value(func(ctx *web.EventContext) (string, error) {
 				var count int64
 				if err := db.Model(&models.Product{}).Count(&count).Error; err != nil {
@@ -28,10 +28,10 @@ func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 				return strconv.FormatInt(count, 10), nil
 			}).
 			Icon("package").
-			Description("全部商品"),
+			Description("All products"),
 
 		// 统计卡片：订单总数
-		dashboard.Stat("订单总数").
+		dashboard.Stat("Total Orders").
 			Value(func(ctx *web.EventContext) (string, error) {
 				var count int64
 				if err := db.Model(&models.Order{}).Count(&count).Error; err != nil {
@@ -40,7 +40,7 @@ func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 				return strconv.FormatInt(count, 10), nil
 			}).
 			Icon("shopping-cart").
-			Description("全部订单"),
+			Description("All orders"),
 
 		// 统计卡片：待处理订单
 		// 演示 Trend 显式方向 API（2026-05 新增）：
@@ -48,7 +48,7 @@ func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 		//   - .Trend("...").TrendUp() 显式标记上升（即使字符串没有 + 号）
 		//   - .Trend("0%").TrendNeutral() 0%/持平 显式中性 → 默认灰色
 		//   - .Trend("-12%").TrendDown() 下降 → 红色 (text-rose-600)
-		dashboard.Stat("待处理订单").
+		dashboard.Stat("Pending Orders").
 			Value(func(ctx *web.EventContext) (string, error) {
 				var count int64
 				if err := db.Model(&models.Order{}).Where("status = ?", "pending").Count(&count).Error; err != nil {
@@ -58,24 +58,24 @@ func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 			}).
 			Icon("clock").
 			Trend("+3"). // 自动绿色（首字符 '+'）
-			Description("较昨日"),
+			Description("vs yesterday"),
 
 		// 演示卡片：本周转化率（中性显式标记）
-		dashboard.Stat("转化率").
+		dashboard.Stat("Conversion Rate").
 			Value(func(ctx *web.EventContext) (string, error) {
 				return "0.0%", nil
 			}).
 			Icon("trending-up").
 			Trend("0.0%").
 			TrendNeutral(). // 显式中性，避免被误判
-			Description("本周持平"),
+			Description("Flat this week"),
 
 		// 图表：订单状态分布
-		dashboard.Chart("订单状态分布").
-			Description("各状态订单数量统计").
+		dashboard.Chart("Order Status Distribution").
+			Description("Orders by status").
 			Type(unovis.ChartTypeBar).
 			Config(unovis.ChartConfig{
-				"count": {Label: "订单数", Color: "var(--chart-1)"},
+				"count": {Label: "Orders", Color: "var(--chart-1)"},
 			}).
 			Data(func(ctx *web.EventContext) (any, error) {
 				type StatusData struct {
@@ -105,8 +105,8 @@ func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 			ColSpan(2),
 
 		// 图表：访问量趋势（模拟数据）
-		dashboard.Chart("访问量趋势").
-			Description("最近 30 天访问量").
+		dashboard.Chart("Visits Trend").
+			Description("Visits in the last 30 days").
 			Type(unovis.ChartTypeLine).
 			Config(unovis.ChartConfig{
 				"desktop": {Label: "Desktop", Color: "var(--chart-2)"},
@@ -139,7 +139,7 @@ func configureDashboard(db *gorm.DB) *dashboard.DashboardBuilder {
 		dashboard.Custom("autorefresh-clock").
 			Body(func(ctx *web.EventContext) (h.HTMLComponent, error) {
 				return shadcn.Card(
-					shadcn.CardHeader(shadcn.CardTitle(h.Text("实时时钟"))),
+					shadcn.CardHeader(shadcn.CardTitle(h.Text("Live Clock"))),
 					shadcn.CardContent(
 						h.Div().Class("text-2xl font-mono").Text(time.Now().Format("15:04:05")),
 					),

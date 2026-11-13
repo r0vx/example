@@ -1,6 +1,7 @@
 package crud_demo
 
 import (
+	"fmt"
 	"time"
 
 	"example/models"
@@ -90,7 +91,7 @@ func orderSlidingData(db *gorm.DB) []orderMinuteDatum {
 	}
 	out := make([]orderMinuteDatum, 0, n)
 	for i := n - 1; i >= 0; i-- {
-		key := end.Add(-time.Duration(i)*step).Format("15:04")
+		key := end.Add(-time.Duration(i) * step).Format("15:04")
 		out = append(out, orderMinuteDatum{T: key, Count: m[key]})
 	}
 	return out
@@ -110,17 +111,40 @@ func orderStatusChartHeader(db *gorm.DB, statusURL, dailyURL, slidingURL string,
 			statusConfig[string(st)] = unovis.ChartConfigItem{Label: string(st), Color: models.OrderStatusColorMap[st]}
 		}
 
+		// 图例 + 空状态：环形图本身只靠颜色区分，补显式标签与数值（读屏/色觉友好）
+		statusData := orderStatusData(db)
+		var legendItems []h.HTMLComponent
+		for _, st := range models.OrderStatuses {
+			var count int64
+			for _, d := range statusData {
+				if d.Category == string(st) {
+					count = d.Count
+					break
+				}
+			}
+			legendItems = append(legendItems, h.Div(
+				h.Div().Class("size-2.5 rounded-full shrink-0").Attr("style", "background:"+models.OrderStatusColorMap[st]),
+				h.Span(string(st)).Class("text-xs text-muted-foreground truncate"),
+				h.Span(fmt.Sprint(count)).Class("text-xs font-medium tabular-nums ml-auto"),
+			).Class("flex items-center gap-2"))
+		}
+
 		statusCard := shadcn.Card(
 			shadcn.CardHeader(
 				h.Div(h.Text("Order Status")).Class("text-sm font-medium text-muted-foreground"),
 			).Class("p-3 pb-0"),
 			shadcn.CardContent(
-				unovis.RadialChart(statusConfig, orderStatusData(db), "count", "category").
+				unovis.RadialChart(statusConfig, statusData, "count", "category").
 					AutoCentralTotal(true).
 					CentralSubLabel("Total").
 					DataURL(statusURL).
 					RefreshOn(refreshEvents...).
 					Class("w-full h-40"),
+				// 两列图例：状态色点 + 名称 + 数量
+				h.Div(legendItems...).Class("grid grid-cols-2 gap-x-4 gap-y-1 px-2 pb-1"),
+				h.If(len(statusData) == 0,
+					h.P(h.Text("No data yet")).Class("text-xs text-muted-foreground text-center pb-2"),
+				),
 			).Class("p-2"),
 		).Class("overflow-hidden")
 
@@ -132,7 +156,7 @@ func orderStatusChartHeader(db *gorm.DB, statusURL, dailyURL, slidingURL string,
 			shadcn.CardContent(
 				unovis.AreaChart(dailyConfig, orderDailyData(db), "day", "count").
 					CurveType(unovis.ChartCurveBasis).
-					ShowXAxis(true).ShowYAxis(false).ShowGrid(false).ShowTooltip(true).ShowLegend(false).
+					ShowXAxis(true).ShowYAxis(true).ShowGrid(false).ShowTooltip(true).ShowLegend(false).
 					DataURL(dailyURL).
 					RefreshOn(refreshEvents...).
 					Class("w-full h-40"),
@@ -147,7 +171,7 @@ func orderStatusChartHeader(db *gorm.DB, statusURL, dailyURL, slidingURL string,
 			shadcn.CardContent(
 				unovis.AreaChart(slidingConfig, orderSlidingData(db), "t", "count").
 					CurveType(unovis.ChartCurveBasis).
-					ShowXAxis(true).ShowYAxis(false).ShowGrid(false).ShowTooltip(true).ShowLegend(false).
+					ShowXAxis(true).ShowYAxis(true).ShowGrid(false).ShowTooltip(true).ShowLegend(false).
 					DataURL(slidingURL).
 					RefreshOn(refreshEvents...).
 					Class("w-full h-40"),

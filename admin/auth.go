@@ -64,9 +64,11 @@ func initLoginSessionBuilder(db *gorm.DB, pb *presets.Builder, ab *activity.Buil
 	loginBuilder := plogin.New(pb).
 		DB(db).
 		UserModel(&models.User{}).
-		// 免登录静态资产：默认的 /assets/ 加上前台主题资源 /theme-assets/
-		// （仍须 GET/HEAD + 静态后缀同时满足，见 x/login 中间件）
-		PublicAssetPrefixes([]string{"/assets/", "/theme-assets/"}).
+		// 免登录静态资产：默认的 /assets/、框架 ExtraAsset 的 /extra/，加上前台主题资源 /theme-assets/
+		// （仍须 GET/HEAD + 静态后缀同时满足，见 x/login 中间件）。
+		// 漏掉 /extra/ 会让登录页的 page-tabs.js 被 302 到登录页 HTML → MIME 拒绝执行 →
+		// window.__r0vxTabs 未定义，登录后首页标签区 Init 报 "reading 'boot'" 且内容区空白。
+		PublicAssetPrefixes([]string{"/assets/", "/extra/", "/theme-assets/"}).
 		Secret(loginSecret).
 		OAuthProviders(oauthProviders...).
 		HomeURLFunc(func(r *http.Request, user interface{}) string {

@@ -113,7 +113,7 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 			return h.Text(order.ConfirmedAt.Local().Format("2006-01-02 15:04:05"))
 		}
 		return h.Text("")
-	}).Label("Check In Date")
+	}).Label("Confirmed At")
 
 	lb.FilterDataFunc(func(ctx *web.EventContext) shadcn.FilterData {
 		statusOptions := make([]shadcn.FilterSelectOption, 0)
@@ -146,14 +146,14 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 	// 格式 `status.in=值`）。切 Tab / 增删订单触发表格 portal 刷新时，Tab 栏与筛选栏保持挂载、不重渲、不闪。
 	lb.FilterTabsFunc(func(ctx *web.EventContext) []*presets.FilterTab {
 		return []*presets.FilterTab{
-			{ID: "all", Label: "全部", Query: url.Values{"all": []string{"1"}}},
-			{ID: "today", Label: "今日", Query: url.Values{"today": []string{"1"}}},
-			{ID: "yesterday", Label: "昨日", Query: url.Values{"yesterday": []string{"1"}}},
-			{ID: "beforeyesterday", Label: "前日", Query: url.Values{"beforeyesterday": []string{"1"}}},
-			{ID: "pending", Label: "待处理", Query: url.Values{"status.in": []string{string(models.OrderStatus_Pending)}}},
-			{ID: "paid", Label: "已支付", Query: url.Values{"status.in": []string{string(models.OrderStatus_Paid)}}},
-			{ID: "sending", Label: "配送中", Query: url.Values{"status.in": []string{string(models.OrderStatus_Sending)}}},
-			{ID: "cancelled", Label: "已取消", Query: url.Values{"status.in": []string{string(models.OrderStatus_Cancelled)}}},
+			{ID: "all", Label: "All", Query: url.Values{"all": []string{"1"}}},
+			{ID: "today", Label: "Today", Query: url.Values{"today": []string{"1"}}},
+			{ID: "yesterday", Label: "Yesterday", Query: url.Values{"yesterday": []string{"1"}}},
+			{ID: "beforeyesterday", Label: "Day Before", Query: url.Values{"beforeyesterday": []string{"1"}}},
+			{ID: "pending", Label: "Pending", Query: url.Values{"status.in": []string{string(models.OrderStatus_Pending)}}},
+			{ID: "paid", Label: "Paid", Query: url.Values{"status.in": []string{string(models.OrderStatus_Paid)}}},
+			{ID: "sending", Label: "Shipping", Query: url.Values{"status.in": []string{string(models.OrderStatus_Sending)}}},
+			{ID: "cancelled", Label: "Cancelled", Query: url.Values{"status.in": []string{string(models.OrderStatus_Cancelled)}}},
 		}
 	})
 
@@ -171,9 +171,9 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 		if orderListingFiltered(ctx) {
 			click = web.Plaid().PushState(false).Reload().Go()
 		}
-		return shadcn.Button(shadcn.Icon("refresh-cw").Size(16).Class("mr-1"), h.Text("刷新")).
+		return shadcn.Button(shadcn.Icon("refresh-cw").Size(16).Class("mr-1"), h.Text("Refresh")).
 			Variant(shadcn.ButtonVariantOutline).Size(shadcn.ButtonSizeSm).
-			Toast("刷新中...", shadcn.ToasterPositionTopCenter).
+			Toast("Refreshing...", shadcn.ToasterPositionTopCenter).
 			Click(click).Busy()
 	})
 	b.RegisterEventFunc("handReload", func(ctx *web.EventContext) (r web.EventResponse, err error) {
@@ -184,7 +184,7 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 	// 顶栏「实时」开关：控全局 SSE 静音（localStorage 持久化）。静音时后台推送被丢弃、列表不自动刷新，
 	// 想看最新就点上面的「刷新」按钮拉一次；恢复实时后又自动跟随推送更新。
 	lb.ToolbarTrailing(func(ctx *web.EventContext) h.HTMLComponent {
-		return presets.SSERealtimeToggle("实时")
+		return presets.SSERealtimeToggle("Live")
 	})
 
 	// detailing
@@ -196,6 +196,24 @@ func ConfigOrder(pb *presets.Builder, db *gorm.DB, sseHub presets.SSEHub) {
 	).Drawer(true)
 
 	eb := b.Editing("Status", "Source", "DeliveryMethod", "PaymentMethod")
+
+	// 必填校验：空表单直接 Create 会落一条全空订单（演示数据容易被误建）
+	eb.ValidateFunc(func(obj any, ctx *web.EventContext) (err web.ValidationErrors) {
+		o := obj.(*models.Order)
+		if o.Status == "" {
+			err.FieldError("Status", "Status is required")
+		}
+		if o.Source == "" {
+			err.FieldError("Source", "Source is required")
+		}
+		if o.PaymentMethod == "" {
+			err.FieldError("PaymentMethod", "Payment Method is required")
+		}
+		if o.DeliveryMethod == "" {
+			err.FieldError("DeliveryMethod", "Delivery Method is required")
+		}
+		return
+	})
 
 	// ===== SSE 实时刷新 =====
 	// orders 无 DataScope（无属主隔离），框架的 DataScope 自动 SSE 推送不覆盖它，
