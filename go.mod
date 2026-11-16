@@ -1,6 +1,6 @@
 module example
 
-go 1.27.3
+go 1.27.4
 
 // require github.com/markbates/goth v1.81.0 // 移除OAuth依赖
 
